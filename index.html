@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">    
+<head>
+    <meta charset="utf-8">
+    <title>Reveal.js 3 Slide Demo</title>
+    <link rel="stylesheet" href="css/reveal.min.css">
+    <link rel="stylesheet" href="css/theme/default.css" id="theme">
+    <link rel="stylesheet" href="css/reflections.css">
+    <!--Add support for earlier versions of Internet Explorer -->
+    <!--[if lt IE 9]>
+    <script src="lib/js/html5shiv.js"></script>
+    <![endif]-->
+    <script type="text/javascript" src="../libraries/three.min.js"></script>
+    <script type="text/javascript" src="../libraries/OrbitControls.js"></script>
+    <script type="text/javascript" src="../libraries/dat.gui.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+    <script type="text/javascript" src="../libraries/stats.min.js"></script>
+    <script type="text/javascript" src="../libraries/Three2Latex.js"></script>
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+          processEscapes: true
+        }
+      });
+    </script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+</head>
+
+<body>
+    <!-- Wrap the entire slide show in a div using the "reveal" class. -->
+    <div class="reveal">
+        <!-- Wrap all slides in a single "slides" class -->
+        <div class="slides">
+
+            <!-- ALL SLIDES GO HERE -->
+            <!-- Each section element contains an individual slide -->
+            <section>
+                <section>
+                    <h1>Translation</h1><br/>Function that moves every point a constant distance in a specified direction.
+                </section>
+                <section>
+                    A translation can also be interpreted as the addition of a constant vector to every point.
+                </section>
+                <section>
+                    Given two vectors <span class="fragment">$v=\left[ \begin{array}{c}v_x\\v_y\\v_z\end{array}\right]$</span><span class="fragment">and $ w=\left[ \begin{array}{c}w_x\\w_y\\w_z\end{array}\right]$</span><br/>
+                    <span class="fragment">The translation of vector $v$ by vector $w$ is defined by <br/> </span>
+                    <span class="fragment">$v+w=$</span><span class="fragment">$\left[ \begin{array}{c}v_x\\v_y\\v_z\end{array}\right] + \left[ \begin{array}{c}w_x\\w_y\\w_z\end{array}\right] =$</span><span class="fragment">$\left[ \begin{array}{c}v_x+w_x\\v_y+w_y\\v_z+w_z\end{array}\right]$</span>
+                </section>
+                <section>
+                    Example:<br/>
+                    <span class="fragment">$v=\left[ \begin{array}{c}1\\2\\4\end{array}\right]$ and $ w=\left[ \begin{array}{c}5\\6\\7\end{array}\right]$</span><br/>
+                    <span class="fragment">$v+w=$</span><span class="fragment">$\left[ \begin{array}{c}1\\2\\4\end{array}\right] + \left[ \begin{array}{c}5\\6\\7\end{array}\right] =$</span><span class="fragment">$\left[ \begin{array}{c}1+5\\2+6\\4+7\end{array}\right]=\left[ \begin{array}{c}6\\8\\11\end{array}\right]$</span>
+                </section>
+                <section>
+                    <a href="./Translations/translations.html">Go to Translations Demo</a>
+                </section>
+            </section>
+            <section>
+                <section>
+                <h1>Scaling</h1>
+                Linear transformation that enlarges (increases) or shrinks (diminishes) objects by a scale factor that can be different in all directions.
+                In the particular case of a scaling factor which is equal for all the dimensions, the process is called "Uniform Scaling".
+                </section>
+                <section>
+                A scaling can be represented using a Matrix.
+                $\left[ \begin{array}{c}-200\\0\\0\end{array}\right]$
+                </section>
+                <section>
+                Another scaling can be represented using a Matrix.<br/>
+                $\left[ \begin{array}{c}-200\\-2000\\0\end{array}\right]$
+                </section>
+                <section>
+                <a href="./Scaling/Scaling.html">Go to Scaling Demo</a>
+                </section>
+            </section>
+            <section>
+                <section>
+                <h1>Reflection</h1>
+                </section>
+                <section>
+                    <a href="./Reflections/reflections.html">Go to Reflections Demo</a>
+                    </section>
+                </section>
+            </section>
+        </div>
+    </div>
+    <script src="lib/js/head.min.js"></script>
+    <script src="js/reveal.min.js"></script>
+    <script>
+        Reveal.addEventListener( 'slidechanged', function( event ) {
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+        } );
+    </script>
+
+    <script>
+        // Required, even if empty.
+        Reveal.initialize({
+        });
+    </script>
+</body>
+</html>

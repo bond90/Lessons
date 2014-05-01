@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="./translations.css">
+	<script src="../libraries/three.min.js"></script>
+	<script src="../libraries/OrbitControls.js"></script>
+	<script type="text/javascript" src="../libraries/dat.gui.min.js"></script>
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+	<script type="text/javascript" src="../libraries/stats.min.js"></script>
+	<script type="text/javascript" src="../libraries/Three2Latex.js"></script>
+	<script type="text/x-mathjax-config">
+	  MathJax.Hub.Config({
+	    tex2jax: {
+	      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+	      processEscapes: true
+	    }
+	  });
+	</script>
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+	</script>
+	<script type="text/javascript">
+	function showMatrixPanel(){
+		console.log("command");
+		document.getElementById("box1").style.display == "none"? document.getElementById("box1").style.display = "block" : document.getElementById("box1").style.display = "none";
+	}
+	</script>
+</head>
+</head>
+<body>
+	<script src="./translations.js"></script>
+	<button id="toggler" onclick="showMatrixPanel();">Toggle</button>
+	<div id="box1"><span id="translationMatrix"></span>$\cdot$<span id="origVector">$\left[\begin{array}{c}0\\0\\0\end{array}\right]$</span>$=$<span id="translatedVector"></span><!--<p>Insert translation matrix</p>
+	<input type="text" class="inputNumber" name="n12"/><input type="text" class="inputNumber" name="n11"/><input type="text" class="inputNumber" name="n13"/><br/><input type="text" class="inputNumber" name="n21"/><input type="text" class="inputNumber" name="n22"/><input type="text" class="inputNumber" name="n23"/><br/><input type="text" class="inputNumber" name="n31"/><input type="text" class="inputNumber" name="n32"/><input type="text" class="inputNumber" name="n33"/><br/><input type="submit" value="Imposta Matrice" onclick="content2Latex(plane.position)">-->
+	</div>
+</body>
+</html>

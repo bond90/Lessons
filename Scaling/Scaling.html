@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="./Scaling.css">
+	<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/cupertino/jquery-ui.css">
+	<script type="text/javascript" src="../libraries/three.min.js"></script>
+	<script type="text/javascript" src="../libraries/OrbitControls.js"></script>
+	<script type="text/javascript" src="../libraries/dat.gui.min.js"></script>
+	<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+	<script type="text/javascript" src="../libraries/stats.min.js"></script>
+	<script type="text/javascript" src="../libraries/Three2Latex.js"></script>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/ui/1.10.4/jquery-ui.min.js"></script>
+	<script type="text/x-mathjax-config">
+	  MathJax.Hub.Config({
+	    tex2jax: {
+	      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+	      processEscapes: true
+	    }
+	  });
+	</script>
+	<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+	</script>
+	<script type="text/javascript">
+			$(document).ready(function(){
+		   	$('div#thedialog').dialog({ autoOpen: false,width:"70%",height:"auto",top:0,left:0 });
+			$('#toggler').click(function(){
+				setData();
+				 $('div#thedialog').dialog('open');
+				 MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+			});
+		});
+	</script>
+</head>
+<body>
+	<script src = "./Scaling.js"></script>
+	<div id="thedialog" title="Explanation">
+	</div>
+	<button id="toggler">Toggle</button>
+</body>
+</html>
