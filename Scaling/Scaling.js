@@ -5,9 +5,9 @@ var userOpts = {
 		duration	: 0.5,
 		delay		: 200,
 		easing		: 'Linear.EaseNone',
-		Reflection  : 'Plane'
+		fadeDuration:3
 };
-var scene, camera, renderer, meshes, plane, cube, stats, controls, gridXY, gridXZ, gridYZ,transformationStack;
+var scene, camera, renderer, meshes, plane, cube, stats, controls, gridXY, gridXZ, gridYZ,transformationStack,axis;
 function init(){
 	var width = window.innerWidth;
 	var height = window.innerHeight;
@@ -34,7 +34,16 @@ function init(){
 	plane.name="plane";
 	plane.position.x=100;
 	meshes.add(plane);
-
+	var lineGeometry = new THREE.Geometry();
+    lineGeometry.vertices.push(new THREE.Vector3(-10, 0, 0));
+    lineGeometry.vertices.push(new THREE.Vector3(0, 10, 0));
+    var lineMaterial = new THREE.LineBasicMaterial({
+        color: 0xff0000,
+        transparent:true,
+        opacity:0
+    });
+    axis = new THREE.Line(lineGeometry, lineMaterial);
+    scene.add(axis);
 	var cubeGeometry = new THREE.CubeGeometry(100, 100, 100);
     var cubeMaterials = [
        new THREE.MeshLambertMaterial({
@@ -122,9 +131,8 @@ function init(){
 	gridYZ.rotation.z = Math.PI/2;
 	gridYZ.setColors( new THREE.Color(0x660000), new THREE.Color(0x660000) );
 	scene.add(gridYZ);
-	console.log(cube.matrix)
 	transformationStack=[];
-	transformationStack.push(cube.matrix.clone());
+	transformationStack.push(new THREE.Matrix4().copy(cube.matrix));
 }
 
 function animate() { 
@@ -146,15 +154,29 @@ Setup the animation and execute it.
 
 function setupTween()
 {
+	var vertexReset=function(){axis.geometry.verticesNeedUpdate=true;};
 	var tl = new TimelineLite();
 	scalingMatrix=new THREE.Matrix4().makeScale(userOpts.x,userOpts.y,userOpts.z);
-	transformationStack.push(scalingMatrix.clone());
+	transformationStack.push(new THREE.Matrix4().copy(scalingMatrix));
 	var meshScalingVector=[];
 	for(var i in meshes.children){
 		meshScalingVector=meshes.children[i].scale;
+		tl.to(axis.geometry.vertices[0],0.01,{x:meshes.children[i].position.x-200,y:meshes.children[i].position.y,z:meshes.children[i].position.z});
+		tl.to(axis.geometry.vertices[1],0.01,{x:meshes.children[i].position.x+200,y:meshes.children[i].position.y,z:meshes.children[i].position.z,onComplete:vertexReset});
+		//tl.to(axis.geometry.vertices[1],0.01,{x:meshes.children[i].position.x+1,onComplete:vertexReset});
+		tl.to(axis.material,userOpts.fadeDuration,{opacity:1});
 		tl.to(meshScalingVector,userOpts.duration,{x:meshScalingVector.x*userOpts.x});
+		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
+		tl.to(axis.geometry.vertices[0],0.01,{x:meshes.children[i].position.x,y:meshes.children[i].position.y-200,z:meshes.children[i].position.z});
+		tl.to(axis.geometry.vertices[1],0.01,{x:meshes.children[i].position.x,y:meshes.children[i].position.y+200,z:meshes.children[i].position.z,onComplete:vertexReset});
+		tl.to(axis.material,userOpts.fadeDuration,{opacity:1});
 		tl.to(meshScalingVector,userOpts.duration,{y:meshScalingVector.y*userOpts.y});
+		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
+		tl.to(axis.geometry.vertices[0],0.01,{x:meshes.children[i].position.x,y:meshes.children[i].position.y,z:meshes.children[i].position.z-200});
+		tl.to(axis.geometry.vertices[1],0.01,{x:meshes.children[i].position.x,y:meshes.children[i].position.y,z:meshes.children[i].position.z+200,onComplete:vertexReset});
+		tl.to(axis.material,userOpts.fadeDuration,{opacity:1});
 		tl.to(meshScalingVector,userOpts.duration,{z:meshScalingVector.z*userOpts.z});
+		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
 		//tl.to(meshScalingVector,userOpts.duration,{x:meshScalingVector.x*userOpts.x,y:meshScalingVector.y*userOpts.y,z:meshScalingVector.z*userOpts.z});
 	}
 	tl.play();
@@ -182,7 +204,8 @@ function buildGui(options,callback){
 	/*var body=document.getElementsByTagName["body"];
 	console.log(body)*/
 	var folder2 = gui.addFolder('Advanced');
-	folder2.add(options, 'duration').name('Duration (ms)');
+	folder2.add(options, 'duration').name('Duration (s)');
+	folder2.add(options, 'fadeDuration').name('Fade Duration (s)');
 	//folder2.addColor(body, '.style.background-color').name('Background-color');
 	var toggleGrid=function(){
 		gridXY.visible===true?gridXY.visible=false:gridXY.visible=true;
@@ -217,14 +240,16 @@ Math.radians = function(deg)
  function setData(){
  	string="";
  	if(transformationStack.length===1){
- 		string="You haven't performed any transformation yet!";
+ 		string="You haven't performed any transformation yet!<br/>";
+ 		string+="The transformation matrix of the object is unchanged:";
+ 		string+="$$"+matrix4Latex(transformationStack[0])+"$$";
  	}
  	else{
- 		string+="You have scaled your objects "+(transformationStack.length-1)+" times <br/>";
+ 		string+="You have scaled your objects "+(transformationStack.length-1)+" time(s) <br/>";
  		string+="Figures refer to the cube mesh; the transformations are represented by the following sequence of matrices multiplications:<br/>";
  		string+=multiplyMatrices(transformationStack);
  		string+="which yields the following results:<br/><br/>";
- 		string+="$$"+matrix4Latex(cube.matrix.clone())+"$$";
+ 		string+="$$"+matrix4Latex(cube.matrix)+"$$";
 
  	}
  	document.getElementById("thedialog").innerHTML=string;
