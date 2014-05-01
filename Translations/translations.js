@@ -4,22 +4,24 @@ var userOpts = {
 		transZ		: 0,
 		duration	: 2.5,
 		delay		: 200,
-		easing		: 'Bounce.easeInOut',
+		easing		: 'Linear.easeNone',
+		mode: 'Direct',
 		mesh: 0,
 		X:0,
 		Y:0,
 		Z:0
 };
-var scene, camera, renderer, plane, skybox, stats, controls, gridXY, gridXZ, gridYZ,gui;
+var scene, camera, renderer, plane, meshes, stats, controls, gridXY, gridXZ, gridYZ,gui,transformationStack	;
 function init(){
-	var gui2;
-	var tweenHead;
 	var width = window.innerWidth;
 	var height = window.innerHeight;
 	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setSize(width, height);
 	document.body.appendChild(renderer.domElement);
 	scene = new THREE.Scene();
+
+	meshes=new THREE.Object3D();
+	transformationStack=[];
 
 	var materials = [
 	       new THREE.MeshLambertMaterial({
@@ -29,20 +31,11 @@ function init(){
 	           map: THREE.ImageUtils.loadTexture('/Content/Images/3.png')
 	       })
 	    ];
-
-	var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
-	var skyboxMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide });
-	skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
-	scene.add(skybox);
-
 	plane = new THREE.Mesh(new THREE.PlaneGeometry(25, 25), new THREE.MeshFaceMaterial(materials,THREE.DoubleSide));
 	plane.overdraw = true;
 	plane.name="plane";
-	skybox.add(plane);
-
-	userOpts.X=skybox.children[0].position.x;
-	userOpts.Y=skybox.children[0].position.y;
-	userOpts.Z=skybox.children[0].position.z;
+	plane.userData.startPos=plane.position;
+	meshes.add(plane);
 	var cubeGeometry = new THREE.CubeGeometry(100, 100, 100);
     var cubeMaterials = [
        new THREE.MeshLambertMaterial({
@@ -69,7 +62,11 @@ function init(){
 	cube.name="Cube";
 	cube.rotation.y = Math.PI * 45 / 180;
 	cube.position.x=-200;
-	skybox.add(cube);
+	cube.userData.startPos=cube.position;
+	meshes.add(cube);
+
+	scene.add(meshes);
+
 	var axisHelper=new THREE.AxisHelper(200);
 	scene.add(axisHelper);
 	var light = new THREE.AmbientLight( 0x909090 ); // soft white light
@@ -84,6 +81,10 @@ function init(){
 
 	controls = new THREE.OrbitControls( camera, renderer.domElement );
 
+
+	userOpts.X=meshes.children[0].position.x;
+	userOpts.Y=meshes.children[0].position.y;
+	userOpts.Z=meshes.children[0].position.z;
 	buildGui(userOpts, function(){
 			setupTween();
 		});
@@ -131,20 +132,34 @@ Setup the animation and execute it.
 function setupTween()
 {
 	var tl = new TimelineLite();
-	tl.add("start", 0);
-	for(var i in skybox.children){
-		vector=skybox.children[i].position;
-		tl.to(skybox.children[i].position,userOpts.duration,{x:vector.x+userOpts.transX,y:vector.y+userOpts.transY,z:vector.z+userOpts.transZ,ease:userOpts.easing,onComplete:updateCenterLocation},"start");
+	var vector=new THREE.Vector3();
+	var i;
+	translationVector=new THREE.Vector3(userOpts.transX,userOpts.transY,userOpts.transZ);
+	transformationStack.push(translationVector);
+	if(userOpts.mode==='Direct'){
+		for(i in meshes.children){
+			vector=meshes.children[i].position;
+			tl.to(meshes.children[i].position,userOpts.duration,{x:vector.x+translationVector.x,y:vector.y+translationVector.y,z:vector.z+translationVector.z,ease:userOpts.easing,onComplete:updateCenterLocation});
+		}
+	}
+	else{
+		for(i in meshes.children){
+			vector=meshes.children[i].position;
+			tl.to(meshes.children[i].position,userOpts.duration,{x:vector.x+userOpts.transX,ease:userOpts.easing,onComplete:updateCenterLocation});
+			tl.to(meshes.children[i].position,userOpts.duration,{y:vector.y+userOpts.transY,ease:userOpts.easing,onComplete:updateCenterLocation});
+			tl.to(meshes.children[i].position,userOpts.duration,{z:vector.z+userOpts.transZ,ease:userOpts.easing,onComplete:updateCenterLocation});
+		}
+
 	}
 	tl.play();
 }
 
 function updateCenterLocation (){
-	userOpts.X=skybox.children[userOpts.mesh].position.x;
-	userOpts.Y=skybox.children[userOpts.mesh].position.y;
-	userOpts.Z=skybox.children[userOpts.mesh].position.z;
-	for (var i in gui.__folders.Centro.__controllers) {
-    		gui.__folders.Centro.__controllers[i].updateDisplay();
+	userOpts.X=meshes.children[userOpts.mesh].position.x;
+	userOpts.Y=meshes.children[userOpts.mesh].position.y;
+	userOpts.Z=meshes.children[userOpts.mesh].position.z;
+	for (var i in gui.__folders.center.__controllers) {
+    		gui.__folders.center.__controllers[i].updateDisplay();
   	}
 }
 
@@ -159,6 +174,7 @@ function buildGui(options,callback){
 	folder1.add(options,'transX');
 	folder1.add(options,'transY');
 	folder1.add(options,'transZ');
+	folder1.add(options,'mode',['Direct','AxisByAxis']);
 	folder1.add(obj,'Translate');
 	folder1.open();
 	var folder2 = gui.addFolder('Advanced');
@@ -169,15 +185,15 @@ function buildGui(options,callback){
 		gridYZ.visible===true?gridYZ.visible=false:gridYZ.visible=true;
 	};
 	folder2.add(obj,'displayGrid').onChange(toggleGrid);
-	var folder3 = gui.addFolder('Centro');
-	var meshes=[];
-	for (var i in skybox.children){
-		meshes.push(i);
+	var folder3 = gui.addFolder('center');
+	var meshesIndexes=[];
+	for (var i in meshes.children){
+		meshesIndexes.push(i);
 	}
-	folder3.add(options,'mesh',meshes).onChange(function(){
-		options.X=skybox.children[options.mesh].position.x;
-		options.Y=skybox.children[options.mesh].position.y;
-		options.Z=skybox.children[options.mesh].position.z;
+	folder3.add(options,'mesh',meshesIndexes).onChange(function(){
+		options.X=meshes.children[options.mesh].position.x;
+		options.Y=meshes.children[options.mesh].position.y;
+		options.Z=meshes.children[options.mesh].position.z;
 		updateCenterLocation();
 	});
 	folder3.add(options,'X');
@@ -204,3 +220,21 @@ function translateWithMatrix(matrix)
 init();
 
 animate();
+
+ function setData(){
+ 	string="";
+ 	if(transformationStack.length===0){
+ 		string="You haven't performed any transformation yet!<br/>";
+ 		string+="The transformation matrix of the object is unchanged:";
+ 		string+="$$"+matrix4Latex(transformationStack[0])+"$$";
+ 	}
+ 	else{
+ 		string+="You have scaled your objects "+(transformationStack.length-1)+" time(s) <br/>";
+ 		string+="Figures refer to the cube mesh; the transformations are represented by the following sequence of matrices multiplications:<br/>";
+ 		string+=multiplyMatrices(transformationStack);
+ 		string+="which yields the following results:<br/><br/>";
+ 		string+="$$"+matrix4Latex(cube.matrix)+"$$";
+
+ 	}
+ 	document.getElementById("thedialog").innerHTML=string;
+ }
