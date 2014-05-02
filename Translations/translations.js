@@ -221,20 +221,15 @@ init();
 
 animate();
 
- function setData(){
+function setData(){
  	string="";
  	if(transformationStack.length===0){
  		string="You haven't performed any transformation yet!<br/>";
  		string+="The transformation matrix of the object is unchanged:";
- 		string+="$$"+matrix4Latex(transformationStack[0])+"$$";
  	}
  	else{
- 		string+="You have scaled your objects "+(transformationStack.length-1)+" time(s) <br/>";
- 		string+="Figures refer to the cube mesh; the transformations are represented by the following sequence of matrices multiplications:<br/>";
- 		string+=multiplyMatrices(transformationStack);
- 		string+="which yields the following results:<br/><br/>";
- 		string+="$$"+matrix4Latex(cube.matrix)+"$$";
-
+ 		string+="You have translated your objects "+(transformationStack.length-1)+" time(s) <br/>";
+ 		string+="Figures refer to the cube mesh; the transformations are represented by the following sequence of vector sums:<br/>";
  	}
  	document.getElementById("thedialog").innerHTML=string;
- }
+}

@@ -1,0 +1,13 @@
+canvas {
+	position: fixed;
+	top: 0;
+	left: 0;
+}
+#box1
+{
+transform:translateZ(10px);
+-ms-transform:translateZ(10px); /* IE */
+-moz-transform:translateZ(10px); /* Firefox */
+-webkit-transform:translateZ(10px); /* Safari and Chrome */
+-o-transform:translateZ(10px);/* Opera */
+}
