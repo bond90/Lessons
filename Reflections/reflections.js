@@ -312,10 +312,10 @@ Math.HouseHolderMatrix=function(){
 function setData(){
  	string="";
  	if(transformationStack.length===1){
- 		string="You haven't performed any transformation yet!";
+ 		string="You haven't reflected objects yet!";
  	}
  	else{
- 		string+="You have scaled your objects "+(transformationStack.length-1)+" times <br/>";
+ 		string+="You have reflected your objects "+(transformationStack.length-1)+" times <br/>";
  		string+="Figures refer to the cube mesh; the transformations are represented by the following sequence of matrices multiplications:<br/>";
  		string+=multiplyMatrices(transformationStack);
  		string+="which yields the following results:<br/><br/>";

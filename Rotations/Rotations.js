@@ -154,36 +154,6 @@ function render() {
 Setup the animation and execute it.
 */
 
-function setupTween()
-{
-	var vertexReset=function(){axis.geometry.verticesNeedUpdate=true;};
-	var tl = new TimelineLite();
-	scalingMatrix=new THREE.Matrix4().makeScale(userOpts.x,userOpts.y,userOpts.z);
-	transformationStack.push(new THREE.Matrix4().copy(scalingMatrix));
-	var meshScalingVector=[];
-	for(var i in meshes.children){
-		meshScalingVector=meshes.children[i].scale;
-		tl.to(axis.geometry.vertices[0],0.01,{x:meshes.children[i].position.x-200,y:meshes.children[i].position.y,z:meshes.children[i].position.z});
-		tl.to(axis.geometry.vertices[1],0.01,{x:meshes.children[i].position.x+200,y:meshes.children[i].position.y,z:meshes.children[i].position.z,onComplete:vertexReset});
-		//tl.to(axis.geometry.vertices[1],0.01,{x:meshes.children[i].position.x+1,onComplete:vertexReset});
-		tl.to(axis.material,userOpts.fadeDuration,{opacity:1});
-		tl.to(meshScalingVector,userOpts.duration,{x:meshScalingVector.x*userOpts.x});
-		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
-		tl.to(axis.geometry.vertices[0],0.01,{x:meshes.children[i].position.x,y:meshes.children[i].position.y-200,z:meshes.children[i].position.z});
-		tl.to(axis.geometry.vertices[1],0.01,{x:meshes.children[i].position.x,y:meshes.children[i].position.y+200,z:meshes.children[i].position.z,onComplete:vertexReset});
-		tl.to(axis.material,userOpts.fadeDuration,{opacity:1});
-		tl.to(meshScalingVector,userOpts.duration,{y:meshScalingVector.y*userOpts.y});
-		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
-		tl.to(axis.geometry.vertices[0],0.01,{x:meshes.children[i].position.x,y:meshes.children[i].position.y,z:meshes.children[i].position.z-200});
-		tl.to(axis.geometry.vertices[1],0.01,{x:meshes.children[i].position.x,y:meshes.children[i].position.y,z:meshes.children[i].position.z+200,onComplete:vertexReset});
-		tl.to(axis.material,userOpts.fadeDuration,{opacity:1});
-		tl.to(meshScalingVector,userOpts.duration,{z:meshScalingVector.z*userOpts.z});
-		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
-		//tl.to(meshScalingVector,userOpts.duration,{x:meshScalingVector.x*userOpts.x,y:meshScalingVector.y*userOpts.y,z:meshScalingVector.z*userOpts.z});
-	}
-	tl.play();
-}
-
 function buildGui(options,callback){
 	var meshes={};
 	var Scale	= function(){
@@ -243,12 +213,9 @@ Math.radians = function(deg)
  		mesh:0
  	};
  	var rotateAngle=function(params){
- 		console.log("rotating"+(params.target.angle-rotation.precAngle))
  		rot=params.target.angle-rotation.precAngle;
- 		counter+=rot;
  		meshes.children[rotation.mesh].rotateOnAxis(rotationAxis,Math.radians(rot));
  		rotation.precAngle=params.target.angle;
- 		console.log(params.target.angle)
  	};
 	var tl = new TimelineLite();
 	for(var i in meshes.children){
@@ -257,4 +224,33 @@ Math.radians = function(deg)
 	}
 	tl.play();
  }
- var counter=0;
+ function rotateWithQuaternion(){
+ 	var rotationAxis=new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize();
+ 	var quaternionsArray=[new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion()];
+ 	rotation={
+ 		t:0,
+ 		mesh:0,
+ 		x:0,
+ 		y:0,
+ 		z:0,
+ 		w:1
+ 	};
+ 	var rotateAngle=function(params){
+ 		qb=new THREE.Quaternion();
+ 		qb.setFromAxisAngle(new THREE.Vector3(1,1,1).normalize(),Math.PI*0.25);
+ 		console.log(meshes.children[rotation.mesh].quaternion);
+ 		//meshes.children[rotation.mesh].quaternion.slerp(qb,rotation.t);
+ 		meshes.children[rotation.mesh].quaternion=meshes.children[i].userData.startQuaternion.clone().slerp(qb,rotation.t);
+ 	};
+	var tl = new TimelineLite();
+	for(var i in meshes.children){
+		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion;
+		tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
+		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle,onUpdateParams:["{self}"]}));
+		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:rotation.mesh+1});
+	}
+	tl.play();
+ 	/*qb=new THREE.Quaternion();
+ 	qb.setFromAxisAngle(new THREE.Vector3(1,1,1).normalize(),Math.PI/4);
+ 	cube.quaternion.slerp(qb,1);*/
+ }
