@@ -5,7 +5,13 @@ var userOpts = {
 			z		: 1,
 			angle:45,
 		},
+		Matrix:{
+			x:0,
+			y:0,
+			z:0
+		},
 		duration	: 5,
+		fadeDuration: 1,
 		delay		: 200,
 		easing		: 'Linear.EaseNone',
 };
@@ -35,6 +41,7 @@ function init(){
 	plane.overdraw = true;
 	plane.name="plane";
 	plane.position.x=100;
+	plane.add (new THREE.AxisHelper(30));
 	meshes.add(plane);
 	var lineGeometry = new THREE.Geometry();
     lineGeometry.vertices.push(new THREE.Vector3(-10, 0, 0));
@@ -83,7 +90,15 @@ function init(){
 	cube.name="Cube";
 	//cube.rotation.y = Math.PI * 45 / 180;
 	cube.position.x=-200;
+	cube.add (new THREE.AxisHelper(70));
 	meshes.add(cube);
+
+	cube2 = new THREE.Mesh(cubeGeometry, new THREE.MeshFaceMaterial( cubeMaterials ) );
+	cube2.name="Cube";
+	//cube.rotation.y = Math.PI * 45 / 180;
+	cube2.position.x=-200;
+	cube2.add (new THREE.AxisHelper(70));
+	//meshes.add(cube2);
 
 	var sphere = new THREE.Mesh(new THREE.SphereGeometry(50, 100, 100), new THREE.MeshNormalMaterial());
     sphere.overdraw = true;
@@ -162,23 +177,26 @@ function buildGui(options,callback){
 		userOpts.y=1;
 		userOpts.z=1;
 	};
-	var obj = { rotate:AxisAngleRotation,displayGrid:true};
+	var obj = { rotate:AxisAngleRotation,quaternion:rotateWithQuaternion,displayGrid:true};
 	var gui = new dat.GUI();
 	var folder1 = gui.addFolder('Axis-Angle');
 	folder1.add(options.AxisAngle,'x');
 	folder1.add(options.AxisAngle,'y');
 	folder1.add(options.AxisAngle,'z');
 	folder1.add(options.AxisAngle,'angle');
-	folder1.add(obj,'rotate');
+	folder1.add(obj,'rotate').name('Axis-Angle rotation');
+	folder1.add(obj,'quaternion').name("Rotate using quaternion");
 	folder1.open();
-	var folder2 = gui.addFolder('Advanced');
-	folder2.add(options, 'duration').name('Duration (s)');
+	var folder2 = gui.addFolder('Rotation Matrix');
+
+	var folder3 = gui.addFolder('Advanced');
+	folder3.add(options, 'duration').name('Duration (s)');
 	var toggleGrid=function(){
 		gridXY.visible===true?gridXY.visible=false:gridXY.visible=true;
 		gridXZ.visible===true?gridXZ.visible=false:gridXZ.visible=true;
 		gridYZ.visible===true?gridYZ.visible=false:gridYZ.visible=true;
 	};
-	folder2.add(obj,'displayGrid').onChange(toggleGrid);
+	folder3.add(obj,'displayGrid').onChange(toggleGrid);
 
 
 }
@@ -217,12 +235,24 @@ Math.radians = function(deg)
  		meshes.children[rotation.mesh].rotateOnAxis(rotationAxis,Math.radians(rot));
  		rotation.precAngle=params.target.angle;
  	};
+ 	var calculateAxis=function(){
+ 		//axis.geometry.vertices[0]=meshes.children[rotation.mesh].position.clone().add(meshes.children[rotation.mesh].localToWorld(rotationAxis.clone()).multiplyScalar(150));
+ 		//axis.geometry.vertices[1]=meshes.children[rotation.mesh].position.clone().add(meshes.children[rotation.mesh].localToWorld(rotationAxis.clone()).multiplyScalar(-150));
+ 		axis.geometry.vertices[0]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(300));
+ 		axis.geometry.vertices[1]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(-300));
+ 		//axis.geometry.vertices[0]=meshes.children[rotation.mesh].position.clone().add(meshes.children[rotation.mesh].localToWorld(rotationAxis.clone()).multiplyScalar(150));
+ 		axis.geometry.verticesNeedUpdate=true;
+ 	};
 	var tl = new TimelineLite();
 	for(var i in meshes.children){
+		tl.to(axis.material,userOpts.fadeDuration,{opacity:1,onStart:calculateAxis});
 		tl.add(TweenLite.to(rotation,userOpts.duration,{angle:userOpts.AxisAngle.angle,onUpdate:rotateAngle,onUpdateParams:["{self}"]}));
+		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
 		tl.to(rotation,0.01,{angle:0,precAngle:0,mesh:rotation.mesh+1});
 	}
 	tl.play();
+ }
+ function MatrixRotation(){
  }
  function rotateWithQuaternion(){
  	var rotationAxis=new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize();
@@ -237,8 +267,7 @@ Math.radians = function(deg)
  	};
  	var rotateAngle=function(params){
  		qb=new THREE.Quaternion();
- 		qb.setFromAxisAngle(new THREE.Vector3(1,1,1).normalize(),Math.PI*0.25);
- 		console.log(meshes.children[rotation.mesh].quaternion);
+ 		qb.setFromAxisAngle(new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize(),userOpts.AxisAngle.angle);
  		//meshes.children[rotation.mesh].quaternion.slerp(qb,rotation.t);
  		meshes.children[rotation.mesh].quaternion=meshes.children[i].userData.startQuaternion.clone().slerp(qb,rotation.t);
  	};

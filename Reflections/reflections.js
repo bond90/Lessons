@@ -137,6 +137,7 @@ function init(){
 	plane.overdraw = true;
 	plane.name="plane";
 	plane.position.x=100;
+	plane.add (new THREE.AxisHelper(30));
 	meshes.add(plane);
 
 	var cubeGeometry = new THREE.CubeGeometry(100, 100, 100);
@@ -176,6 +177,7 @@ function init(){
 	cube.name="Cube";
 	//cube.rotation.y = Math.PI * 45 / 180;
 	cube.position.x=-200;
+	cube.add (new THREE.AxisHelper(70));
 	meshes.add(cube);
 
 	var sphere = new THREE.Mesh(new THREE.SphereGeometry(50, 100, 100), new THREE.MeshNormalMaterial());
@@ -291,7 +293,6 @@ Math.radians = function(deg)
  };
 
 Math.HouseHolderMatrix=function(){
-	//calcolo della matrice di HouseHolder senza utilizzarla veramente
 	var w=new THREE.Vector3( reflectVector.x, reflectVector.y, reflectVector.z );
 	var v=w.clone();
 	var c=w.dot(v);
@@ -306,6 +307,7 @@ Math.HouseHolderMatrix=function(){
 		HHMatrix.elements[k]=identity.elements[k]-matrix3.elements[k];
 	}
 	HHMatrix.elements[15]=1;
+	console.log(HHMatrix);
 	return HHMatrix;
 };
 

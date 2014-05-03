@@ -5,7 +5,7 @@ var userOpts = {
 		duration	: 0.5,
 		delay		: 200,
 		easing		: 'Linear.EaseNone',
-		fadeDuration:3
+		fadeDuration:1
 };
 var scene, camera, renderer, meshes, plane, cube, stats, controls, gridXY, gridXZ, gridYZ,transformationStack,axis;
 function init(){
@@ -252,5 +252,5 @@ Math.radians = function(deg)
  		string+="$$"+matrix4Latex(cube.matrix)+"$$";
 
  	}
- 	document.getElementById("thedialog").innerHTML=string;
+ 	document.getElementById("dialogBox").innerHTML=string;
  }
