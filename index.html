@@ -60,16 +60,17 @@
             <section>
                 <section>
                 <h1>Scaling</h1>
-                Linear transformation that enlarges (increases) or shrinks (diminishes) objects by a scale factor that can be different in all directions.
-                In the particular case of a scaling factor which is equal for all the dimensions, the process is called "Uniform Scaling".
+                Linear transformation that enlarges (increases) or shrinks (diminishes) objects by a scale factor.
                 </section>
                 <section>
-                A scaling can be represented using a Matrix.
-                $\left[ \begin{array}{c}-200\\0\\0\end{array}\right]$
+                An object scaling can be represented using a Matrix.
+                $$\left[\begin{array}{cccc}3&0&0&0\\0&2&0&0\\0&0&1&0\\0&0&0&1\\\end{array}\right]$$
+                This scales "x" dimension by 3 times, "y" dimension by 2 times, and leaves "z" dimension unmodified. 
                 </section>
                 <section>
-                Another scaling can be represented using a Matrix.<br/>
-                $\left[ \begin{array}{c}-200\\-2000\\0\end{array}\right]$
+                    In the case of a scale factor equal for all dimensions, we're talking about "Uniform Scaling"<br/>
+                    $$\left[\begin{array}{cccc}3&0&0&0\\0&3&0&0\\0&0&3&0\\0&0&0&1\\\end{array}\right]$$
+                    This is an example of uniform scaling scaling the object in each dimension by factor 3.
                 </section>
                 <section>
                 <a href="./Scaling/Scaling.html">Go to Scaling Demo</a>
@@ -82,6 +83,39 @@
                 <section>
                     <a href="./Reflections/reflections.html">Go to Reflections Demo</a>
                     </section>
+                </section>
+            </section>
+            <section>
+                <section>
+                <h1>Rotations</h1>
+                </section>
+                <section>
+                    Rotation: motion of a certain space that preserves at least one point.
+                </section>
+                <section>
+                    <h3>2D Rotation</h3>
+                    In two dimensions, a rotation can be represented using a 2x2 matrix:
+                     $$\left[\begin{array}{cccc}cos(\theta)&-sin(\theta)\\sin(\theta)&cos(\theta)\\\end{array}\right]$$
+                </section>
+                <section>
+                    <h3>2D Rotation</h3>
+                    Here's an example: we're rotating a vector $w=\left[ \begin{array}{c}1\\0\end{array}\right]$ by 90°<br/>
+                    <span class="fragment">$w'=\left[\begin{array}{cccc}0&1\\1&0\\\end{array}\right]\left[ \begin{array}{c}1\\0\end{array}\right]=\left[ \begin{array}{c}0\\1\end{array}\right]$</span>
+                </section>
+                <section>
+                    <h3>3D Rotation</h3>
+                </section>
+                <section>
+                    <h3>3D Rotation</h3>
+                </section>
+                <section>
+                    <h3>3D Rotation</h3>
+                </section>
+                <section>
+                    <h3>3D Rotation</h3>
+                </section>
+                <section>
+                    <a href="./Rotations/rotations.html">Go to Rotations Demo</a>
                 </section>
             </section>
         </div>
