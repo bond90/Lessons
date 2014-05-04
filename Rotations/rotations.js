@@ -185,9 +185,15 @@ function buildGui(options,callback){
 	var obj = { rotate:AxisAngleRotation,quaternion:rotateWithQuaternion,matrix:rotateWithMatrix,displayGrid:true};
 	gui = new dat.GUI();
 	var folder1 = gui.addFolder('Euler');
-	folder1.add(cube.rotation,"x").min(-180).max(180);
-	folder1.add(cube.rotation,"y").min(-180).max(180);
-	folder1.add(cube.rotation,"z").min(-180).max(180);
+	folder1.add(options.Euler,"x").min(-180).max(180).onChange(function(value){
+		cube.rotation.x=Math.radians(value);
+	});
+	folder1.add(options.Euler,"y").min(-180).max(180).onChange(function(value){
+		cube.rotation.y=Math.radians(value);
+	});;
+	folder1.add(options.Euler,"z").min(-180).max(180).onChange(function(value){
+		cube.rotation.z=Math.radians(value);
+	});;
 	folder1.open();
 	var folder2= gui.addFolder('Axis-Angle');
 	folder2.add(options.AxisAngle,'x');
@@ -195,7 +201,7 @@ function buildGui(options,callback){
 	folder2.add(options.AxisAngle,'z');
 	folder2.add(options.AxisAngle,'angle');
 	folder2.add(obj,'rotate').name('Axis-Angle rotation');
-	folder2.add(obj,'quaternion').name("Rotate using quaternion");
+	folder2.add(obj,'quaternion').name("Quaternion");
 	folder2.open();
 	var folder3 = gui.addFolder('Rotation Matrix');
 	folder3.add(userOpts.rotationMatrix.parameters,'0').name('First angle');
@@ -216,8 +222,6 @@ function buildGui(options,callback){
 	folder4.add(obj,'displayGrid').onChange(toggleGrid);
 	var folder5 = gui.addFolder('center');
 	var meshesIndexes=[];
-	console.log(cube)
-	console.log(meshes)
 	for (var i in meshes.children){
 		meshesIndexes.push(i);
 	}
@@ -227,6 +231,7 @@ function buildGui(options,callback){
 		options.Z=meshes.children[options.mesh].position.z;
 		updateCenterLocation();
 	});
+	updateCenterLocation();
 	folder5.add(options,'X');
 	folder5.add(options,'Y');
 	folder5.add(options,'Z');
@@ -257,8 +262,14 @@ Math.radians = function(deg)
  	string="";
  	switch(cube.userData.last){
  		case "Quaternion":{
- 			console.log("quaternion")
- 			string+="QuaternionUsed"
+ 			string+="You performed a rotation using quaternions<br/>";
+ 			string+="Rotation axis: $"+vector3Latex(new THREE.Vector3(cube.userData.axis[0],cube.userData.axis[1],cube.userData.axis[2]))+"$<br/><br/>";
+ 			string+="Rotation angle: $"+cube.userData.angle+" deg$<br/><br/>";
+ 			string+="Rotation quaternion: $"+quaternionLatex(cube.userData.rotationQuaternion)+"$<br/><br/>";
+ 			string+="Start quaternion: $"+quaternionLatex(cube.userData.startQuaternion)+"$<br/><br/>";
+ 			string+="End quaternion: $"+quaternionLatex(cube.userData.endQuaternion)+"$<br/><br/>";
+ 			string+="This quaternion has been obtained by simply multiplying the start quaternion times the one defined by our rotation.<br/><br/>";
+ 			string+="The first element of this quaternion is the cosine of half our angle, starting from zero"
  			break;
  		}
  		case "AxisAngle":{
@@ -271,38 +282,28 @@ Math.radians = function(deg)
  			break;
  		}
  		case "Matrix":{
- 			console.log("Matrix")
  			matrices=[];
  			resultMatrix=new THREE.Matrix4();
  			tempMatrix=new THREE.Matrix4();
  			for(var j=0;j<3;j++){
 				if(cube.userData.axisOrder[j]==="x"){
-					console.log("making matrix rotation on axis x by angle")
-					console.log(Math.radians(cube.userData.angles[j]))
+					console.log("making matrix rotation on axis x by angle");
 					tempMatrix.makeRotationX(Math.radians(cube.userData.angles[j]));
-					console.log(tempMatrix)
-					console.log(cube.userData)
 					resultMatrix.multiplyMatrices(tempMatrix,resultMatrix);
 					matrices.push(tempMatrix.clone());
 				}
 				else if(userOpts.rotationMatrix.axes[j]==="y"){
-					console.log("making matrix rotation on axis y by angle")
-					console.log(Math.radians(cube.userData.angles[j]))
 					tempMatrix.makeRotationY(Math.radians(cube.userData.angles[j]));
-					console.log(tempMatrix)
 					resultMatrix.multiplyMatrices(tempMatrix,resultMatrix);
 					matrices.push(tempMatrix.clone());
 				}
 				else if(userOpts.rotationMatrix.axes[j]==="z"){
-					console.log("making matrix rotation on axis z by angle")
-					console.log(Math.radians(cube.userData.angles[j]))
-					tempMatrix.makeRotationZ(Math.radians(cube.userData.angles[j]))
-					console.log(tempMatrix)
+					tempMatrix.makeRotationZ(Math.radians(cube.userData.angles[j]));
 					resultMatrix.multiplyMatrices(tempMatrix,resultMatrix);
 					matrices.push(tempMatrix.clone());
 				}
 			}
- 			string+="You chose the matrix rotation.<br/>";
+ 			string+="You performed a matrix rotation.<br/>";
  			string+="The rotation was performed in this sequence:"+cube.userData.axisOrder;
  			string+=multiplyMatrices(matrices);
  			string+="<br/>This yields the following results:<br/><br/>";
@@ -373,7 +374,6 @@ Math.radians = function(deg)
  }
  function rotateWithQuaternion(){
  	var rotationAxis=new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize();
- 	var quaternionsArray=[new THREE.Quaternion(),new THREE.Quaternion(),new THREE.Quaternion()];
  	rotation={
  		t:0,
  		mesh:0,
@@ -382,28 +382,28 @@ Math.radians = function(deg)
  		z:0,
  		w:1
  	};
- 	var rotateAngle=function(params){
- 		qb=new THREE.Quaternion();
- 		//qb.setFromAxisAngle(new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize(),userOpts.AxisAngle.angle);
-		qb.setFromAxisAngle(rotationAxis,userOpts.AxisAngle.angle);
- 		//meshes.children[rotation.mesh].quaternion.slerp(qb,rotation.t);
- 		meshes.children[rotation.mesh].quaternion=meshes.children[i].userData.startQuaternion.clone().slerp(qb,rotation.t);
+ 	var rotateAngle=function(){
+ 		meshes.children[rotation.mesh].quaternion=meshes.children[i].userData.startQuaternion.clone().slerp(meshes.children[rotation.mesh].userData.endQuaternion,rotation.t);
  	};
 	var tl = new TimelineLite();
 	for(var i in meshes.children){
 		meshes.children[i].userData.last="Quaternion";
 		meshes.children[i].userData.axis=[userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z];
-		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion;
+		meshes.children[i].userData.angle=userOpts.AxisAngle.angle;
+		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion.clone();
+		meshes.children[i].userData.rotationQuaternion=new THREE.Quaternion().setFromAxisAngle(rotationAxis,Math.radians(userOpts.AxisAngle.angle));
+		meshes.children[i].userData.endQuaternion=meshes.children[i].quaternion.clone().multiply(meshes.children[i].userData.rotationQuaternion);
 		tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
-		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle,onUpdateParams:["{self}"]}));
+		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle}));
 		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:rotation.mesh+1});
 	}
+	tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:0});
 	tl.play();
  }
- function rotateWithEuler(prop){
+/* function rotateWithEuler(prop){
  	console.log(meshes)
  	for (var i in meshes.children){
  		console.log(i);
  		meshes.children[i].rotation[prop]=userOpts.Euler[prop];
  	}
- }
+ }*/

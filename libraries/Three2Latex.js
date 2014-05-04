@@ -73,17 +73,18 @@ function matrix3Latex(object){
 }
 function matrix4Latex(object){
 		var string="";
-		console.log(string);
 		string+="\\left[\\begin{array}{cccc}";
 		for (i=0;i<4;i++){
 			string+=object.elements[i]+"&"+object.elements[i+4]+"&"+object.elements[i+8]+"&"+object.elements[i+12]+"\\\\";
 		}
-		console.log(object);
-		console.log(string);
 		string+="\\end{array}\\right] ";
 		return string;
 }
 
+function quaternionLatex(object){
+	var string="";
+	return string+="\\left[ \\begin{array}{c}"+object.w+"&"+object.x+"&"+object.y+"&"+object.z+"\\end{array}\\right]"
+}
 function multiplyMatrices(params,result){
 	var string="$$";
 	for(var i=params.length-1;i>=0;i--){
@@ -95,7 +96,6 @@ function multiplyMatrices(params,result){
 			string+=matrix3Latex(params[i]);
 		}
 		//console.log(string)
-		console.log("step")
 	}
 	/*if(result){
 		if(result instanceof THREE.Matrix4){
