@@ -1,4 +1,9 @@
 var userOpts = {
+		Euler:{
+			x:0,
+			y:0,
+			z:0
+		},
 		AxisAngle:{
 			x		: 1,
 			y		: 1,
@@ -99,13 +104,20 @@ function init(){
 	cube2.position.x=-200;
 	cube2.add (new THREE.AxisHelper(70));
 	//meshes.add(cube2);
+	/*var eulerHelpermaterial = new THREE.MeshBasicMaterial({
+    color: 0x0000ff,
+    transparent:true,
+    opacity:1,
+    wireframe:true
+	});
 
-	var sphere = new THREE.Mesh(new THREE.SphereGeometry(50, 100, 100), new THREE.MeshNormalMaterial());
-    sphere.overdraw = true;
-    sphere.position.x=-200;
-    sphere.position.y=-100;
-    //meshes.add(sphere);
+	var radius = 100;
+	var segments = 32; //<-- Increase or decrease for more resolution I guess
 
+	var eulerHelperGeometry = new THREE.CircleGeometry( radius, segments );              
+	var circle = new THREE.Mesh( eulerHelperGeometry, eulerHelperMaterial );
+	circle.position=cube.position;
+	scene.add( circle );*/
 	scene.add(meshes);
 
 	var axisHelper = new THREE.AxisHelper( 500 );
@@ -171,32 +183,31 @@ Setup the animation and execute it.
 
 function buildGui(options,callback){
 	var meshes={};
-	var Scale	= function(){
-		callback();
-		userOpts.x=1;
-		userOpts.y=1;
-		userOpts.z=1;
-	};
 	var obj = { rotate:AxisAngleRotation,quaternion:rotateWithQuaternion,displayGrid:true};
 	var gui = new dat.GUI();
-	var folder1 = gui.addFolder('Axis-Angle');
-	folder1.add(options.AxisAngle,'x');
-	folder1.add(options.AxisAngle,'y');
-	folder1.add(options.AxisAngle,'z');
-	folder1.add(options.AxisAngle,'angle');
-	folder1.add(obj,'rotate').name('Axis-Angle rotation');
-	folder1.add(obj,'quaternion').name("Rotate using quaternion");
+	var folder1 = gui.addFolder('Euler');
+	folder1.add(options.Euler,"x").min(-180).max(180);
+	folder1.add(options.Euler,"y").min(-180).max(180).onChange(rotateWithEuler("y"));
+	folder1.add(options.Euler,"z").min(-180).max(180).onChange(rotateWithEuler("y"));
 	folder1.open();
-	var folder2 = gui.addFolder('Rotation Matrix');
+	var folder2= gui.addFolder('Axis-Angle');
+	folder2.add(options.AxisAngle,'x');
+	folder2.add(options.AxisAngle,'y');
+	folder2.add(options.AxisAngle,'z');
+	folder2.add(options.AxisAngle,'angle');
+	folder2.add(obj,'rotate').name('Axis-Angle rotation');
+	folder2.add(obj,'quaternion').name("Rotate using quaternion");
+	folder2.open();
+	var folder3 = gui.addFolder('Rotation Matrix');
 
-	var folder3 = gui.addFolder('Advanced');
-	folder3.add(options, 'duration').name('Duration (s)');
+	var folder4 = gui.addFolder('Advanced');
+	folder4.add(options, 'duration').name('Duration (s)');
 	var toggleGrid=function(){
 		gridXY.visible===true?gridXY.visible=false:gridXY.visible=true;
 		gridXZ.visible===true?gridXZ.visible=false:gridXZ.visible=true;
 		gridYZ.visible===true?gridYZ.visible=false:gridYZ.visible=true;
 	};
-	folder3.add(obj,'displayGrid').onChange(toggleGrid);
+	folder4.add(obj,'displayGrid').onChange(toggleGrid);
 
 
 }
@@ -223,6 +234,13 @@ Math.radians = function(deg)
  };
  function setData(){
  }
+ function EulerRotation(){
+ 	rotation={
+ 		angle:0,
+ 		precAngle:0,
+ 		mesh:0
+ 	};
+ }
  function AxisAngleRotation(){
  	var rotationAxis=new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize();
  	rotation={
@@ -239,7 +257,7 @@ Math.radians = function(deg)
  		//axis.geometry.vertices[0]=meshes.children[rotation.mesh].position.clone().add(meshes.children[rotation.mesh].localToWorld(rotationAxis.clone()).multiplyScalar(150));
  		//axis.geometry.vertices[1]=meshes.children[rotation.mesh].position.clone().add(meshes.children[rotation.mesh].localToWorld(rotationAxis.clone()).multiplyScalar(-150));
  		axis.geometry.vertices[0]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(300));
- 		axis.geometry.vertices[1]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(-300));
+ 		axis.geometry.vertices[1]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(-030));
  		//axis.geometry.vertices[0]=meshes.children[rotation.mesh].position.clone().add(meshes.children[rotation.mesh].localToWorld(rotationAxis.clone()).multiplyScalar(150));
  		axis.geometry.verticesNeedUpdate=true;
  	};
@@ -282,4 +300,11 @@ Math.radians = function(deg)
  	/*qb=new THREE.Quaternion();
  	qb.setFromAxisAngle(new THREE.Vector3(1,1,1).normalize(),Math.PI/4);
  	cube.quaternion.slerp(qb,1);*/
+ }
+ function rotateWithEuler(prop){
+ 	console.log(meshes)
+ 	for (var i in meshes.children){
+ 		console.log(i);
+ 		meshes.children[i].rotation[prop]=userOpts.Euler[prop];
+ 	}
  }
