@@ -188,8 +188,10 @@ function buildGui(options,callback){
 	var folder3 = gui.addFolder('center');
 	var meshesIndexes=[];
 	for (var i in meshes.children){
+		console.log("add")
 		meshesIndexes.push(i);
 	}
+	console.log(meshesIndexes);
 	folder3.add(options,'mesh',meshesIndexes).onChange(function(){
 		options.X=meshes.children[options.mesh].position.x;
 		options.Y=meshes.children[options.mesh].position.y;
@@ -231,5 +233,5 @@ function setData(){
  		string+="You have translated your objects "+(transformationStack.length-1)+" time(s) <br/>";
  		string+="Figures refer to the cube mesh; the transformations are represented by the following sequence of vector sums:<br/>";
  	}
- 	document.getElementById("thedialog").innerHTML=string;
+ 	document.getElementById("dialogBox").innerHTML=string;
 }

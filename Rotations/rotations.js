@@ -5,9 +5,8 @@ var userOpts = {
 			z:0
 		},
 		rotationMatrix:{
-			x:0,
-			y:0,
-			z:0,
+			parameters:[0,0,0],
+			axes:["x","y","z"]
 		},
 		AxisAngle:{
 			x		: 1,
@@ -24,8 +23,12 @@ var userOpts = {
 		fadeDuration: 1,
 		delay		: 200,
 		easing		: 'Linear.EaseNone',
+		mesh: 0,
+		X:0,
+		Y:0,
+		Z:0
 };
-var scene, camera, renderer, meshes, plane, cube, stats, controls, gridXY, gridXZ, gridYZ,transformationStack,axis,rotation;
+var scene, camera, renderer, meshes, plane, cube, stats, controls, gui, gridXY, gridXZ, gridYZ,transformationStack,axis,rotation;
 function init(){
 	var width = window.innerWidth;
 	var height = window.innerHeight;
@@ -123,9 +126,8 @@ function init(){
 	window.addEventListener( 'resize', onWindowResize, false );
 
 	controls = new THREE.OrbitControls( camera, renderer.domElement );
-
+	console.log(meshes)
 	buildGui(userOpts, function(){
-			setupTween();
 		});
 
 	stats = new Stats();
@@ -170,10 +172,18 @@ function render() {
 Setup the animation and execute it.
 */
 
+function updateCenterLocation (){
+	userOpts.X=meshes.children[userOpts.mesh].position.x;
+	userOpts.Y=meshes.children[userOpts.mesh].position.y;
+	userOpts.Z=meshes.children[userOpts.mesh].position.z;
+	for (var i in gui.__folders.center.__controllers) {
+    		gui.__folders.center.__controllers[i].updateDisplay();
+  	}
+}
+
 function buildGui(options,callback){
-	var meshes={};
-	var obj = { rotate:AxisAngleRotation,quaternion:rotateWithQuaternion,displayGrid:true};
-	var gui = new dat.GUI();
+	var obj = { rotate:AxisAngleRotation,quaternion:rotateWithQuaternion,matrix:rotateWithMatrix,displayGrid:true};
+	gui = new dat.GUI();
 	var folder1 = gui.addFolder('Euler');
 	folder1.add(cube.rotation,"x").min(-180).max(180);
 	folder1.add(cube.rotation,"y").min(-180).max(180);
@@ -188,9 +198,14 @@ function buildGui(options,callback){
 	folder2.add(obj,'quaternion').name("Rotate using quaternion");
 	folder2.open();
 	var folder3 = gui.addFolder('Rotation Matrix');
-	folder3.add(userOpts.rotationMatrix,'x').name('X angle');
-	folder3.add(userOpts.rotationMatrix,'y').name('Y angle');
-	folder3.add(userOpts.rotationMatrix,'z').name('Z angle');
+	folder3.add(userOpts.rotationMatrix.parameters,'0').name('First angle');
+	folder3.add(userOpts.rotationMatrix.axes,'0',["x","y","z"]).name('First axis');
+	folder3.add(userOpts.rotationMatrix.parameters,'1').name('Second angle');
+	folder3.add(userOpts.rotationMatrix.axes,'1',["x","y","z"]).name('Second axis');
+	folder3.add(userOpts.rotationMatrix.parameters,'2').name('Third angle');
+	folder3.add(userOpts.rotationMatrix.axes,'2',["x","y","z"]).name('Third axis');
+	folder3.add(obj,'matrix').name('Rotate using matrices');
+	folder3.open();
 	var folder4 = gui.addFolder('Advanced');
 	folder4.add(options, 'duration').name('Duration (s)');
 	var toggleGrid=function(){
@@ -199,8 +214,23 @@ function buildGui(options,callback){
 		gridYZ.visible===true?gridYZ.visible=false:gridYZ.visible=true;
 	};
 	folder4.add(obj,'displayGrid').onChange(toggleGrid);
-
-
+	var folder5 = gui.addFolder('center');
+	var meshesIndexes=[];
+	console.log(cube)
+	console.log(meshes)
+	for (var i in meshes.children){
+		meshesIndexes.push(i);
+	}
+	folder5.add(options,'mesh',meshesIndexes).onChange(function(){
+		options.X=meshes.children[options.mesh].position.x;
+		options.Y=meshes.children[options.mesh].position.y;
+		options.Z=meshes.children[options.mesh].position.z;
+		updateCenterLocation();
+	});
+	folder5.add(options,'X');
+	folder5.add(options,'Y');
+	folder5.add(options,'Z');
+	folder5.open();
 }
 
 function onWindowResize() {
@@ -239,6 +269,49 @@ Math.radians = function(deg)
  			string+="The rotation axis w.r.t. the world axis has coordinates $"+vector3Latex(new THREE.Vector3(cube.userData.axis[0],cube.userData.axis[1],cube.userData.axis[2]))+"$<br/>";
  			string+="The rotation axis w.r.t. the local axis has coordinates $"+vector3Latex(new THREE.Vector3(cube.userData.axis[0],cube.userData.axis[1],cube.userData.axis[2]).applyMatrix4(cube.matrix))+"$";
  			break;
+ 		}
+ 		case "Matrix":{
+ 			console.log("Matrix")
+ 			matrices=[];
+ 			resultMatrix=new THREE.Matrix4();
+ 			tempMatrix=new THREE.Matrix4();
+ 			for(var j=0;j<3;j++){
+				if(cube.userData.axisOrder[j]==="x"){
+					console.log("making matrix rotation on axis x by angle")
+					console.log(Math.radians(cube.userData.angles[j]))
+					tempMatrix.makeRotationX(Math.radians(cube.userData.angles[j]));
+					console.log(tempMatrix)
+					console.log(cube.userData)
+					resultMatrix.multiplyMatrices(tempMatrix,resultMatrix);
+					matrices.push(tempMatrix.clone());
+				}
+				else if(userOpts.rotationMatrix.axes[j]==="y"){
+					console.log("making matrix rotation on axis y by angle")
+					console.log(Math.radians(cube.userData.angles[j]))
+					tempMatrix.makeRotationY(Math.radians(cube.userData.angles[j]));
+					console.log(tempMatrix)
+					resultMatrix.multiplyMatrices(tempMatrix,resultMatrix);
+					matrices.push(tempMatrix.clone());
+				}
+				else if(userOpts.rotationMatrix.axes[j]==="z"){
+					console.log("making matrix rotation on axis z by angle")
+					console.log(Math.radians(cube.userData.angles[j]))
+					tempMatrix.makeRotationZ(Math.radians(cube.userData.angles[j]))
+					console.log(tempMatrix)
+					resultMatrix.multiplyMatrices(tempMatrix,resultMatrix);
+					matrices.push(tempMatrix.clone());
+				}
+			}
+ 			string+="You chose the matrix rotation.<br/>";
+ 			string+="The rotation was performed in this sequence:"+cube.userData.axisOrder;
+ 			string+=multiplyMatrices(matrices);
+ 			string+="<br/>This yields the following results:<br/><br/>";
+ 			string+="$"+matrix4Latex(resultMatrix)+"$<br/><br/>";
+ 			string+="and this is the transformation matrix of the cube<br/><br/>";
+			string+="$"+matrix4Latex(cube.matrix)+"$<br/><br/>";
+ 			/*string+="The rotation axis w.r.t. the world axis has coordinates $"+vector3Latex(new THREE.Vector3(cube.userData.axis[0],cube.userData.axis[1],cube.userData.axis[2]))+"$<br/>";
+ 			string+="The rotation axis w.r.t. the local axis has coordinates $"+vector3Latex(new THREE.Vector3(cube.userData.axis[0],cube.userData.axis[1],cube.userData.axis[2]).applyMatrix4(cube.matrix))+"$";
+ 			*/break;
  		}
  	}
  	console.log(string);
@@ -279,18 +352,22 @@ Math.radians = function(deg)
 	}
 	tl.play();
  }
- function MatrixRotation(){
- 	var matrix1=new THREE.Matrix4().makeRotationX(userOpts.rotationMatrix.x);
- 	var matrix2=new THREE.Matrix4().makeRotationY(userOpts.rotationMatrix.y);
- 	var matrix3=new THREE.Matrix4().makeRotationZ(userOpts.rotationMatrix.z);
+ function rotateWithMatrix(){
  	for(var i in meshes.children){
 		meshes.children[i].userData.last="Matrix";
-		meshes.children[i].userData.matrix=[userOpts.rotationMatrix.x,userOpts.rotationMatrix.y,userOpts.rotationMatrix.z];
-		meshes.children[i].userData.axis=[userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z];
-		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion;
-		tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
-		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle,onUpdateParams:["{self}"]}));
-		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:rotation.mesh+1});
+		meshes.children[i].userData.axisOrder=userOpts.rotationMatrix.axes[0]+userOpts.rotationMatrix.axes[1]+userOpts.rotationMatrix.axes[2];
+		meshes.children[i].userData.angles=[userOpts.rotationMatrix.parameters[0],userOpts.rotationMatrix.parameters[1],userOpts.rotationMatrix.parameters[2]];
+		for(var j=0;j<3;j++){
+			if(userOpts.rotationMatrix.axes[j]==="x"){
+				meshes.children[i].applyMatrix(new THREE.Matrix4().makeRotationX(Math.radians(userOpts.rotationMatrix.parameters[j])));
+			}
+			else if(userOpts.rotationMatrix.axes[j]==="y"){
+				meshes.children[i].applyMatrix(new THREE.Matrix4().makeRotationY(Math.radians(userOpts.rotationMatrix.parameters[j])));
+			}
+			else if(userOpts.rotationMatrix.axes[j]==="z"){
+				meshes.children[i].applyMatrix(new THREE.Matrix4().makeRotationZ(Math.radians(userOpts.rotationMatrix.parameters[j])));
+			}
+		}
 	}
 
  }
