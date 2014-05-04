@@ -2,20 +2,13 @@
 <html lang="en">    
 <head>
     <meta charset="utf-8">
-    <title>Reveal.js 3 Slide Demo</title>
+    <title>Presentation </title>
     <link rel="stylesheet" href="css/reveal.min.css">
     <link rel="stylesheet" href="css/theme/default.css" id="theme">
-    <link rel="stylesheet" href="css/reflections.css">
     <!--Add support for earlier versions of Internet Explorer -->
     <!--[if lt IE 9]>
     <script src="lib/js/html5shiv.js"></script>
     <![endif]-->
-    <script type="text/javascript" src="../libraries/three.min.js"></script>
-    <script type="text/javascript" src="../libraries/OrbitControls.js"></script>
-    <script type="text/javascript" src="../libraries/dat.gui.min.js"></script>
-    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
-    <script type="text/javascript" src="../libraries/stats.min.js"></script>
-    <script type="text/javascript" src="../libraries/Three2Latex.js"></script>
     <script type="text/x-mathjax-config">
       MathJax.Hub.Config({
         tex2jax: {
@@ -106,13 +99,86 @@
                     <h3>3D Rotation</h3>
                 </section>
                 <section>
-                    <h3>3D Rotation</h3>
+                    <h3>Euler Angles</h3>
+                        Introduced by Leonhard Euler.
+                        First method to describe the orientation of a rigid body.
                 </section>
                 <section>
-                    <h3>3D Rotation</h3>
+                    <h3>Euler Angles</h3>
+                    They describe the orientation of a reference "frame" through a series of successive rotations referred to a fixed cohordinates system, called "original frame".
                 </section>
                 <section>
-                    <h3>3D Rotation</h3>
+                    <h3>Euler Angles</h3>
+                    Rotations can be performed in 
+                    <ul>
+                        <span class="fragment"><li>12 different sequences</li></span>
+                        <span class="fragment"><li>With respect to Local or World axes</li></span>
+                    </ul><br/>
+                        <span class="fragment">Three.js by default rotates around Local axes, and the default sequence is "XYZ". However, this sequence can be changed by simply setting an object property <br/></span>
+                </section>
+                <section>
+                    <h3>Euler Angles</h3>
+                    We can think of this sequence as a way of "nesting" axes. The first rotation changes the orientation of all the three axes, the second rotation only changes the second and the third axes, and the last one just moves the third axis in the sequence.
+                </section>
+                <section>
+                    <h3>Gimbal lock</h3>
+                    Euler Angles representation suffers from a great problem: the so-called "Gimbal Lock".<br/>
+                </section>
+                <section>
+                    <h3>Gimbal lock</h3>
+                    From Wikipedia:<br/>
+                    A gimbal is a ring that is so suspended as to rotate about an axis.<br/>
+                    Gimbals typically nest one within another to accommodate rotation about multiple axes.<br/>
+                    <img src="http://upload.wikimedia.org/wikipedia/commons/5/5a/Gimbal_3_axes_rotation.gif"><img>
+                </section>
+                <section>
+                    <h3>Gimbal lock</h3>
+                    Gimbal lock is the loss of a degree of freedom because of the alignment of two axes.
+                </section>
+                <section>
+                    <h3>Gimbal lock</h3>
+                    Euler angles behave just like Gimbals; this means that a Gimbal Lock might occur.
+                    If this happens, the system loses a degree of freedom, I.E. it is able to rotate only in two directions instead of three.
+                </section>
+                <section>
+                    <h3>3D Rotation matrices</h3>
+                    Rotation matrices represent a rotation around one of the axis of a coordinate system.
+                    Rotations are performed counterclockwise and can be easily visualized using the right-hand rule.
+                </section>
+                <section>
+                    <h3>3D Rotation matrices</h3>
+                    Rotation matrices are orthogonal matrices.
+                    Properties:
+                    <ul>
+                        <li>Determinant is 1. Orientation of the axes is not inverted</li>
+                        <li></li>
+                    </ul>
+                </section>
+                <section>
+                    <h3>3D Rotation matrices</h3>
+                    The following three matrices represent a rotation by a $\theta$ angle around the X axis, Y axis and Z axis respectively:
+                    $\left[\begin{array}{cccc}1&0&0\\0&cos(\theta)&-sin(\theta)\\0&sin(\theta)&cos(\theta)\\\end{array}\right]$
+                    $\left[\begin{array}{cccc}cos(\theta)&0&sin(\theta)\\0&1&0\\-sin(\theta)&0&cos(\theta)\\\end{array}\right]$
+                    $\left[\begin{array}{cccc}cos(\theta)&-sin(\theta)&0\\sin(\theta)&cos(\theta)&0\\0&0&1\\\end{array}\right]$
+                </section>
+                <section>
+                    <h3>3D Rotation matrices</h3>
+                    Obviously, rotations can be composed.
+                    Using rotation matrices, this means multiplying matrices.
+                    Notice that, as matrix multiplication is generally not commutative, rotations aren't too.
+                </section>
+                <section>
+                    Example:<br/>
+                    $\left[\begin{array}{cccc}cos(\theta)&0&sin(\theta)\\0&1&0\\-sin(\theta)&0&cos(\theta)\\\end{array}\right]$
+                    $\left[\begin{array}{cccc}1&0&0\\0&cos(\theta)&-sin(\theta)\\0&sin(\theta)&cos(\theta)\\\end{array}\right]$<br/>
+                    Result: $\left[\begin{array}{cccc}cos(\alpha)&sin(\alpha)sin(\theta)&sin(\alpha)cos(\theta)\\0&cos(\theta)&-sin(\theta)\\-sin(\alpha)&cos(\alpha)sin(\theta)&cos(\alpha)cos(\theta)\\\end{array}\right]$<br/>
+                    This matrix represents a rotation by angle $\theta$ around X axis followed by a rotation by angle $\alpha$ around Y axis.
+                </section>
+                <section>
+                    <h3>3D Rotation matrices</h3>
+                </section>
+                 <section>
+                    <h3>Quaternions</h3>
                 </section>
                 <section>
                     <a href="./Rotations/rotations.html">Go to Rotations Demo</a>
