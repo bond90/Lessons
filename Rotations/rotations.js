@@ -4,6 +4,11 @@ var userOpts = {
 			y:0,
 			z:0
 		},
+		rotationMatrix:{
+			x:0,
+			y:0,
+			z:0,
+		},
 		AxisAngle:{
 			x		: 1,
 			y		: 1,
@@ -15,7 +20,7 @@ var userOpts = {
 			y:0,
 			z:0
 		},
-		duration	: 5,
+		duration	: 1,
 		fadeDuration: 1,
 		delay		: 200,
 		easing		: 'Linear.EaseNone',
@@ -100,24 +105,8 @@ function init(){
 
 	cube2 = new THREE.Mesh(cubeGeometry, new THREE.MeshFaceMaterial( cubeMaterials ) );
 	cube2.name="Cube";
-	//cube.rotation.y = Math.PI * 45 / 180;
 	cube2.position.x=-200;
 	cube2.add (new THREE.AxisHelper(70));
-	//meshes.add(cube2);
-	/*var eulerHelpermaterial = new THREE.MeshBasicMaterial({
-    color: 0x0000ff,
-    transparent:true,
-    opacity:1,
-    wireframe:true
-	});
-
-	var radius = 100;
-	var segments = 32; //<-- Increase or decrease for more resolution I guess
-
-	var eulerHelperGeometry = new THREE.CircleGeometry( radius, segments );              
-	var circle = new THREE.Mesh( eulerHelperGeometry, eulerHelperMaterial );
-	circle.position=cube.position;
-	scene.add( circle );*/
 	scene.add(meshes);
 
 	var axisHelper = new THREE.AxisHelper( 500 );
@@ -186,9 +175,9 @@ function buildGui(options,callback){
 	var obj = { rotate:AxisAngleRotation,quaternion:rotateWithQuaternion,displayGrid:true};
 	var gui = new dat.GUI();
 	var folder1 = gui.addFolder('Euler');
-	folder1.add(options.Euler,"x").min(-180).max(180);
-	folder1.add(options.Euler,"y").min(-180).max(180).onChange(rotateWithEuler("y"));
-	folder1.add(options.Euler,"z").min(-180).max(180).onChange(rotateWithEuler("y"));
+	folder1.add(cube.rotation,"x").min(-180).max(180);
+	folder1.add(cube.rotation,"y").min(-180).max(180);
+	folder1.add(cube.rotation,"z").min(-180).max(180);
 	folder1.open();
 	var folder2= gui.addFolder('Axis-Angle');
 	folder2.add(options.AxisAngle,'x');
@@ -199,7 +188,9 @@ function buildGui(options,callback){
 	folder2.add(obj,'quaternion').name("Rotate using quaternion");
 	folder2.open();
 	var folder3 = gui.addFolder('Rotation Matrix');
-
+	folder3.add(userOpts.rotationMatrix,'x').name('X angle');
+	folder3.add(userOpts.rotationMatrix,'y').name('Y angle');
+	folder3.add(userOpts.rotationMatrix,'z').name('Z angle');
 	var folder4 = gui.addFolder('Advanced');
 	folder4.add(options, 'duration').name('Duration (s)');
 	var toggleGrid=function(){
@@ -233,6 +224,25 @@ Math.radians = function(deg)
  return deg * (Math.PI/180);
  };
  function setData(){
+ 	string="";
+ 	switch(cube.userData.last){
+ 		case "Quaternion":{
+ 			console.log("quaternion")
+ 			string+="QuaternionUsed"
+ 			break;
+ 		}
+ 		case "AxisAngle":{
+ 			console.log("AxisAngle")
+ 			string+="You chose the Axis-Angle Method.<br/>";
+ 			string+="During the rotation, a red axis appeared in the scene.";
+ 			string+="This axis was your chosen Rotation Axis, drawn with respect to the mesh's local reference frame.";
+ 			string+="The rotation axis w.r.t. the world axis has coordinates $"+vector3Latex(new THREE.Vector3(cube.userData.axis[0],cube.userData.axis[1],cube.userData.axis[2]))+"$<br/>";
+ 			string+="The rotation axis w.r.t. the local axis has coordinates $"+vector3Latex(new THREE.Vector3(cube.userData.axis[0],cube.userData.axis[1],cube.userData.axis[2]).applyMatrix4(cube.matrix))+"$";
+ 			break;
+ 		}
+ 	}
+ 	console.log(string);
+ 	document.getElementById("dialogBox").innerHTML=string;
  }
  function EulerRotation(){
  	rotation={
@@ -254,15 +264,14 @@ Math.radians = function(deg)
  		rotation.precAngle=params.target.angle;
  	};
  	var calculateAxis=function(){
- 		//axis.geometry.vertices[0]=meshes.children[rotation.mesh].position.clone().add(meshes.children[rotation.mesh].localToWorld(rotationAxis.clone()).multiplyScalar(150));
- 		//axis.geometry.vertices[1]=meshes.children[rotation.mesh].position.clone().add(meshes.children[rotation.mesh].localToWorld(rotationAxis.clone()).multiplyScalar(-150));
  		axis.geometry.vertices[0]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(300));
- 		axis.geometry.vertices[1]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(-030));
- 		//axis.geometry.vertices[0]=meshes.children[rotation.mesh].position.clone().add(meshes.children[rotation.mesh].localToWorld(rotationAxis.clone()).multiplyScalar(150));
+ 		axis.geometry.vertices[1]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(-300));
  		axis.geometry.verticesNeedUpdate=true;
  	};
 	var tl = new TimelineLite();
 	for(var i in meshes.children){
+		meshes.children[i].userData.last="AxisAngle";
+		meshes.children[i].userData.axis=[userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z];
 		tl.to(axis.material,userOpts.fadeDuration,{opacity:1,onStart:calculateAxis});
 		tl.add(TweenLite.to(rotation,userOpts.duration,{angle:userOpts.AxisAngle.angle,onUpdate:rotateAngle,onUpdateParams:["{self}"]}));
 		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
@@ -271,6 +280,19 @@ Math.radians = function(deg)
 	tl.play();
  }
  function MatrixRotation(){
+ 	var matrix1=new THREE.Matrix4().makeRotationX(userOpts.rotationMatrix.x);
+ 	var matrix2=new THREE.Matrix4().makeRotationY(userOpts.rotationMatrix.y);
+ 	var matrix3=new THREE.Matrix4().makeRotationZ(userOpts.rotationMatrix.z);
+ 	for(var i in meshes.children){
+		meshes.children[i].userData.last="Matrix";
+		meshes.children[i].userData.matrix=[userOpts.rotationMatrix.x,userOpts.rotationMatrix.y,userOpts.rotationMatrix.z];
+		meshes.children[i].userData.axis=[userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z];
+		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion;
+		tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
+		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle,onUpdateParams:["{self}"]}));
+		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:rotation.mesh+1});
+	}
+
  }
  function rotateWithQuaternion(){
  	var rotationAxis=new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize();
@@ -285,21 +307,21 @@ Math.radians = function(deg)
  	};
  	var rotateAngle=function(params){
  		qb=new THREE.Quaternion();
- 		qb.setFromAxisAngle(new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize(),userOpts.AxisAngle.angle);
+ 		//qb.setFromAxisAngle(new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize(),userOpts.AxisAngle.angle);
+		qb.setFromAxisAngle(rotationAxis,userOpts.AxisAngle.angle);
  		//meshes.children[rotation.mesh].quaternion.slerp(qb,rotation.t);
  		meshes.children[rotation.mesh].quaternion=meshes.children[i].userData.startQuaternion.clone().slerp(qb,rotation.t);
  	};
 	var tl = new TimelineLite();
 	for(var i in meshes.children){
+		meshes.children[i].userData.last="Quaternion";
+		meshes.children[i].userData.axis=[userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z];
 		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion;
 		tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
 		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle,onUpdateParams:["{self}"]}));
 		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:rotation.mesh+1});
 	}
 	tl.play();
- 	/*qb=new THREE.Quaternion();
- 	qb.setFromAxisAngle(new THREE.Vector3(1,1,1).normalize(),Math.PI/4);
- 	cube.quaternion.slerp(qb,1);*/
  }
  function rotateWithEuler(prop){
  	console.log(meshes)
