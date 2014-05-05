@@ -64,38 +64,119 @@ function init(){
         transparent:true,
         opacity:0
     });
-    axis = new THREE.Line(lineGeometry, lineMaterial);
+
+
+	var tetraHedronGeometry = new THREE.Geometry();
+	array=[];
+	array.push(new THREE.Vector3( 1,  0, 0 ));
+	array.push(new THREE.Vector3( -1, 0, 0 ));
+	array.push(new THREE.Vector3( 0, 0, Math.sqrt(3) ));
+	array.push(new THREE.Vector3( 0, 2*Math.sqrt(2.0/3.0), Math.sqrt(3)/3.0 ));
+	for(var i in array){
+		array[i].y-=2.0/3.0*Math.sqrt(2.0/3.0);
+		array[i].z-=Math.sqrt(3)/3.0;
+		array[i].normalize();
+	}
+	/*tetraHedronGeometry.vertices.push(  );
+	tetraHedronGeometry.vertices.push( new THREE.Vector3( -1, 0, 0 ) );
+	tetraHedronGeometry.vertices.push( new THREE.Vector3(  0, 0, Math.sqrt(3) ) );
+	tetraHedronGeometry.vertices.push( new THREE.Vector3(  0, 2*Math.sqrt(2.0/3.0), Math.sqrt(3)/3.0 ) );*/
+//	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+//	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 1 ) );
+//	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 3 ) );
+//	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 3, 2 ) );
+	arrayFaces=[];
+	arrayFaces.push(new THREE.Face3( 0, 2, 1));
+	arrayFaces.push(new THREE.Face3( 0, 1, 3));
+	arrayFaces.push(new THREE.Face3( 0, 3, 2));
+	arrayFaces.push(new THREE.Face3( 1, 2, 3));
+	oldArrayFaces=[];
+	faceIndexesToRemove=[];
+	for (k=1;k<5;k++) {
+		for(i in arrayFaces){
+			oldArrayFaces.push(arrayFaces[i]);	
+		}
+		arrayFaces=[];
+        var barycenter = new THREE.Vector3();
+        for (var j in oldArrayFaces) {
+        	v0=oldArrayFaces[j].a;
+           	v1=oldArrayFaces[j].b;
+           	v2=oldArrayFaces[j].c;
+        	barycenter.x=array[v0].x+array[v1].x+array[v2].x;
+        	barycenter.y=array[v0].y+array[v1].y+array[v2].y;
+        	barycenter.z=array[v0].z+array[v1].z+array[v2].z;
+        	barycenter.multiplyScalar(1.0/3.0);
+        	barycenter.normalize();
+        	array.push(barycenter.clone());
+        	arrayFaces.push(new THREE.Face3(v0,v1,array.length-1));
+        	arrayFaces.push(new THREE.Face3(v1,v2,array.length-1));
+        	arrayFaces.push(new THREE.Face3(v2,v0,array.length-1));
+        }
+	}
+
+
+	for(i in array){
+		tetraHedronGeometry.vertices.push(array[i]);
+	}
+	for(i in arrayFaces){
+		tetraHedronGeometry.faces.push(arrayFaces[i]);
+	}
+
+/*	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 1 ) );
+	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 1, 3 ) );
+	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 2 ) );
+	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 2, 3 ) );
+*/
+
+	tetraHedronGeometry.computeBoundingSphere();
+	tetraHedronGeometry.computeFaceNormals();
+	tetraHedronGeometry.computeVertexNormals();
+
+	tetraHedronMaterial=new THREE.MeshNormalMaterial({wireframe:true});
+	tetraHedron=new THREE.Mesh(tetraHedronGeometry,tetraHedronMaterial);
+	tetraHedron.scale.x=50;
+	tetraHedron.scale.y=50;
+	tetraHedron.scale.z=50;
+	tetraHedron.position.x=-100;
+	faceNormals=new THREE.FaceNormalsHelper(tetraHedron,70);
+	meshes.add(tetraHedron);
+	//scene.add(faceNormals);
+
+
+
+
+   	axis = new THREE.Line(lineGeometry, lineMaterial);
     scene.add(axis);
 	var cubeGeometry = new THREE.CubeGeometry(100, 100, 100);
     var cubeMaterials = [
        new THREE.MeshLambertMaterial({
            map: THREE.ImageUtils.loadTexture('/Content/Images/1.png'),
-           side:THREE.DoubleSide,
+           //side:THREE.DoubleSide,
            transparent:true
        }),
        new THREE.MeshLambertMaterial({
            map: THREE.ImageUtils.loadTexture('/Content/Images/3.png'),
-           side:THREE.DoubleSide,
+           //side:THREE.DoubleSide,
            transparent:true
        }),
        new THREE.MeshLambertMaterial({
            map: THREE.ImageUtils.loadTexture('/Content/Images/6.png'),
-           side:THREE.DoubleSide,
+           //side:THREE.DoubleSide,
            transparent:true
        }),
        new THREE.MeshLambertMaterial({
            map: THREE.ImageUtils.loadTexture('/Content/Images/5.png'),
-           side:THREE.DoubleSide,
+           //side:THREE.DoubleSide,
            transparent:true
        }),
        new THREE.MeshLambertMaterial({
            map: THREE.ImageUtils.loadTexture('/Content/Images/4.png'),
-           side:THREE.DoubleSide,
+           //side:THREE.DoubleSide,
            transparent:true
        }),
        new THREE.MeshLambertMaterial({
            map: THREE.ImageUtils.loadTexture('/Content/Images/2.png'),
-           side:THREE.DoubleSide,
+           //side:THREE.DoubleSide,
            transparent:true
        })
     ];
