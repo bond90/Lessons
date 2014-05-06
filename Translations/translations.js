@@ -1,8 +1,8 @@
 var userOpts = {
-		transX		: 0,
+		transX		: 25,
 		transY		: 0,
 		transZ		: 0,
-		duration	: 2.5,
+		duration	: 1,
 		delay		: 200,
 		easing		: 'Linear.easeNone',
 		mode: 'Direct',
@@ -11,7 +11,7 @@ var userOpts = {
 		Y:0,
 		Z:0
 };
-var scene, camera, renderer, plane, meshes, stats, controls, gridXY, gridXZ, gridYZ,gui,transformationStack	;
+var scene, camera, renderer, plane, meshes, stats, controls, gridXY, gridXZ, gridYZ,gui,transformationStack;
 function init(){
 	var width = window.innerWidth;
 	var height = window.innerHeight;
@@ -22,7 +22,6 @@ function init(){
 
 	meshes=new THREE.Object3D();
 	transformationStack=[];
-
 	var materials = [
 	       new THREE.MeshLambertMaterial({
 	           map: THREE.ImageUtils.loadTexture('/Content/Images/1.png'),side: THREE.DoubleSide
@@ -34,7 +33,7 @@ function init(){
 	plane = new THREE.Mesh(new THREE.PlaneGeometry(25, 25), new THREE.MeshFaceMaterial(materials,THREE.DoubleSide));
 	plane.overdraw = true;
 	plane.name="plane";
-	plane.userData.startPos=plane.position;
+	plane.userData.startPos=plane.position.clone();
 	meshes.add(plane);
 	var cubeGeometry = new THREE.CubeGeometry(100, 100, 100);
     var cubeMaterials = [
@@ -62,7 +61,7 @@ function init(){
 	cube.name="Cube";
 	cube.rotation.y = Math.PI * 45 / 180;
 	cube.position.x=-200;
-	cube.userData.startPos=cube.position;
+	cube.userData.startPos=cube.position.clone();
 	meshes.add(cube);
 
 	scene.add(meshes);
@@ -164,11 +163,18 @@ function updateCenterLocation (){
 }
 
 function buildGui(options,callback){
-	var click	= function(){
-		callback();
-	};
-
-	var obj = { Translate:click,displayGrid:true};
+	var obj = { Translate:function(){
+				callback();
+				},
+				displayGrid:true,
+				reset:function(){
+					for(var i in meshes.children){
+						console.log(meshes.children[i].userData.startPos);
+						meshes.children[i].position=meshes.children[i].userData.startPos;
+						transformationStack=[];
+					}
+				},
+			};
 	gui = new dat.GUI();
 	var folder1 = gui.addFolder('Translation');
 	folder1.add(options,'transX');
@@ -188,10 +194,8 @@ function buildGui(options,callback){
 	var folder3 = gui.addFolder('center');
 	var meshesIndexes=[];
 	for (var i in meshes.children){
-		console.log("add")
 		meshesIndexes.push(i);
 	}
-	console.log(meshesIndexes);
 	folder3.add(options,'mesh',meshesIndexes).onChange(function(){
 		options.X=meshes.children[options.mesh].position.x;
 		options.Y=meshes.children[options.mesh].position.y;
@@ -201,6 +205,7 @@ function buildGui(options,callback){
 	folder3.add(options,'X');
 	folder3.add(options,'Y');
 	folder3.add(options,'Z');
+	gui.add(obj,"reset").name("Reset all positions");
 	folder3.open();
 
 }
@@ -225,13 +230,24 @@ animate();
 
 function setData(){
  	string="";
+ 	cube=meshes.children[1];
  	if(transformationStack.length===0){
- 		string="You haven't performed any transformation yet!<br/>";
- 		string+="The transformation matrix of the object is unchanged:";
+ 		string+="You haven't performed any transformation yet!<br/>";
+ 		string+="The transformation matrix of the cube is unchanged:";
+ 		string+=matrixLatex(cube.matrix);
  	}
  	else{
- 		string+="You have translated your objects "+(transformationStack.length-1)+" time(s) <br/>";
- 		string+="Figures refer to the cube mesh; the transformations are represented by the following sequence of vector sums:<br/>";
+ 		string+="You have translated your objects "+(transformationStack.length)+" time(s) <br/>";
+ 		string+="This is the transformation matrix of the cube:";
+ 		string+=matrixLatex(cube.matrix);
+ 		string+="<br/>The transformation is represented by the following sequence of vector sums:<br/>";
+ 		totalVector=new THREE.Vector3();
+ 		for (var i in transformationStack){
+ 			totalVector.add(transformationStack[i]);
+ 		}
+ 		string+=vector3Sum(transformationStack,totalVector);
+ 		string+="<br/>The starting position of the cube was $"+vector3Latex(cube.userData.startPos)+"$";
+ 		string+="<br/>The final position is:" +vector3Sum([cube.userData.startPos,totalVector],cube.position);
  	}
  	document.getElementById("dialogBox").innerHTML=string;
 }
