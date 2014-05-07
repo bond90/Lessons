@@ -7,6 +7,9 @@ var userOpts = {
 		easing		: 'Linear.EaseNone',
 		Reflection  : 'Plane',
 };
+var animationOpts={
+	mesh:0
+};
 var scene, camera, renderer, meshes, reflectionMeshes, reflectionPoints, cloneMeshes, line, plane, cube, reflectPlane, reflectVector, transformationStack, stats, controls, gridXY, gridXZ, gridYZ;
 
 function buildGui(options,callback){
@@ -44,26 +47,23 @@ Finally, the new meshes fade in
 
 function setupTween()
 {
-	length=cloneMeshes.children.length;
-
-	for (var i=length-1;i>=0;i--){
-		cloneMeshes.remove(cloneMeshes.children[i]);
-	}
-
+	var i,j;
+	animationOpts.mesh=0;
 	setReflectionPlane();
 	reflectPlane.material.opacity=0;
 	reflectPlane.visible=true;
 	for ( i=reflectionPoints.children.length-1;i>=0;i--){
 		reflectionPoints.remove(reflectionPoints.children[i]);
 	}
+	var point;
 	var vector;
-	for(var j in meshes.children){
+	for(j in meshes.children){
 		for (i in meshes.children[j].geometry.vertices){
-			mesh=new THREE.Mesh(new THREE.SphereGeometry(5, 3, 3), new THREE.MeshNormalMaterial());
+			point=new THREE.Mesh(new THREE.SphereGeometry(5, 3, 3), new THREE.MeshNormalMaterial());
 			vector = meshes.children[j].geometry.vertices[i].clone();
 			vector.applyMatrix4(meshes.children[j].matrixWorld);
-			mesh.position=vector;
-			reflectionPoints.add(mesh);
+			point.position=vector;
+			reflectionPoints.add(point);
 		}
 	}
 	var tl = new TimelineLite();
@@ -78,21 +78,23 @@ function setupTween()
 		tl.to(reflectionPoints.children[i].position,userOpts.duration,{x:vector.x,y:vector.y,z:vector.z,ease:userOpts.easing});
 		tl.to(line.material,userOpts.duration,{opacity:0});
 	}
-	var cloneMesh;
-	var children=meshes.children;
-	for(var mesh in children){
-		newMesh=new THREE.Mesh(children[mesh].geometry.clone(),children[mesh].material.clone());
-		newMesh.applyMatrix(meshes.children[mesh].matrix);
-		cloneMeshes.add(newMesh);
+	tl.add("fadeOut", tl.duration());
+	var moveMesh=function(){
+		meshes.children[animationOpts.mesh].applyMatrix(HouseHolder);
+		meshes.children[animationOpts.mesh].updateMatrix();
+		animationOpts.mesh+=1;
+	};
+	for (var mesh in meshes.children){
+			for(i in meshes.children[mesh].material.materials){
+				tl.to(meshes.children[mesh].material.materials[i],userOpts.duration,{opacity:0,onComplete:moveMesh},"fadeOut");
+				tl.to(meshes.children[mesh].material.materials[i],userOpts.duration,{opacity:1});
+			}
 	}
 	tl.add("fadeIn", tl.duration());
-	for (mesh in cloneMeshes.children){
-			for(i in cloneMeshes.children[mesh].material.materials){
-				cloneMeshes.children[mesh].material.materials[i].opacity=0;
-				tl.to(cloneMeshes.children[mesh].material.materials[i],userOpts.duration,{opacity:1},"fadeIn");
-			}
-			cloneMeshes.children[mesh].applyMatrix(HouseHolder);
-			cloneMeshes.children[mesh].updateMatrix();
+	for (j in meshes.children){
+			for(i in meshes.children[j].material.materials){
+				tl.to(meshes.children[j].material.materials[i],userOpts.duration,{opacity:1},"fadeIn");
+		}
 	}
 	tl.play();
 }
@@ -177,7 +179,6 @@ function init(){
 	cube.name="Cube";
 	//cube.rotation.y = Math.PI * 45 / 180;
 	cube.position.x=-200;
-	cube.add (new THREE.AxisHelper(70));
 	meshes.add(cube);
 
 	var sphere = new THREE.Mesh(new THREE.SphereGeometry(50, 100, 100), new THREE.MeshNormalMaterial());

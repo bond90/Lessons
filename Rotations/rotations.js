@@ -92,7 +92,7 @@ function init(){
 	arrayFaces.push(new THREE.Face3( 1, 2, 3));
 	oldArrayFaces=[];
 	faceIndexesToRemove=[];
-	for (k=1;k<5;k++) {
+	for (k=1;k<10;k++) {
 		for(i in arrayFaces){
 			oldArrayFaces.push(arrayFaces[i]);	
 		}
@@ -207,7 +207,6 @@ function init(){
 	window.addEventListener( 'resize', onWindowResize, false );
 
 	controls = new THREE.OrbitControls( camera, renderer.domElement );
-	console.log(meshes)
 	buildGui(userOpts, function(){
 		});
 
@@ -271,10 +270,10 @@ function buildGui(options,callback){
 	});
 	folder1.add(options.Euler,"y").min(-180).max(180).onChange(function(value){
 		cube.rotation.y=Math.radians(value);
-	});;
+	});
 	folder1.add(options.Euler,"z").min(-180).max(180).onChange(function(value){
 		cube.rotation.z=Math.radians(value);
-	});;
+	});
 	folder1.open();
 	var folder2= gui.addFolder('Axis-Angle');
 	folder2.add(options.AxisAngle,'x');
