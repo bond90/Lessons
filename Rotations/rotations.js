@@ -66,7 +66,7 @@ function init(){
     });
 
 
-	var tetraHedronGeometry = new THREE.Geometry();
+	/*var tetraHedronGeometry = new THREE.Geometry();
 	array=[];
 	array.push(new THREE.Vector3( 1,  0, 0 ));
 	array.push(new THREE.Vector3( -1, 0, 0 ));
@@ -77,14 +77,14 @@ function init(){
 		array[i].z-=Math.sqrt(3)/3.0;
 		array[i].normalize();
 	}
-	/*tetraHedronGeometry.vertices.push(  );
+	tetraHedronGeometry.vertices.push(  );
 	tetraHedronGeometry.vertices.push( new THREE.Vector3( -1, 0, 0 ) );
 	tetraHedronGeometry.vertices.push( new THREE.Vector3(  0, 0, Math.sqrt(3) ) );
-	tetraHedronGeometry.vertices.push( new THREE.Vector3(  0, 2*Math.sqrt(2.0/3.0), Math.sqrt(3)/3.0 ) );*/
-//	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
-//	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 1 ) );
-//	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 3 ) );
-//	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 3, 2 ) );
+	tetraHedronGeometry.vertices.push( new THREE.Vector3(  0, 2*Math.sqrt(2.0/3.0), Math.sqrt(3)/3.0 ) );
+	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
+	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 1 ) );
+	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 3 ) );
+	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 3, 2 ) );
 	arrayFaces=[];
 	arrayFaces.push(new THREE.Face3( 0, 2, 1));
 	arrayFaces.push(new THREE.Face3( 0, 1, 3));
@@ -122,11 +122,11 @@ function init(){
 		tetraHedronGeometry.faces.push(arrayFaces[i]);
 	}
 
-/*	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 1 ) );
+	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 1 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 1, 3 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 2 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 2, 3 ) );
-*/
+
 
 	tetraHedronGeometry.computeBoundingSphere();
 	tetraHedronGeometry.computeFaceNormals();
@@ -140,9 +140,8 @@ function init(){
 	tetraHedron.position.x=-100;
 	faceNormals=new THREE.FaceNormalsHelper(tetraHedron,70);
 	meshes.add(tetraHedron);
-	//scene.add(faceNormals);
-
-
+	scene.add(faceNormals);
+	console.log("finishedSphere;")*/
 
 
    	axis = new THREE.Line(lineGeometry, lineMaterial);
@@ -191,7 +190,70 @@ function init(){
 	cube2.name="Cube";
 	cube2.position.x=-200;
 	cube2.add (new THREE.AxisHelper(70));
+	/*geometryX=new THREE.CircleGeometry( 120, 64);
+	geometryX.vertices.shift();
+	geometryX.vertices.verticesNeedUpdate=true;
+	geometryY=new THREE.CircleGeometry( 120, 64);
+	/*geometryY.vertices.shift();
+	geometryY.vertices.verticesNeedUpdate=true;
+	geometryZ=new THREE.CircleGeometry( 120, 64);
+	/*geometryZ.vertices.shift();
+	geometryZ.vertices.verticesNeedUpdate=true;
+	gimbalsX=new THREE.Mesh(geometryX , new THREE.LineBasicMaterial({transparent:true,opacity:0}));
+	/*gimbalsX.geometry.vertices.shift();
+	gimbalsX.geometry.verticesNeedUpdate=true;
+	gimbalsY=new THREE.Mesh(geometryY, new THREE.LineBasicMaterial(  {transparent:true,opacity:0}));
+	/*gimbalsY.geometry.vertices.shift();
+	gimbalsY.geometry.verticesNeedUpdate=true;
+	gimbalsZ=new THREE.Mesh(geometryZ, new THREE.LineBasicMaterial( {transparent:true,opacity:0} ));
+	/*gimbalsZ.geometry.vertices.shift();
+	gimbalsZ.geometry.verticesNeedUpdate=true;
+	gimbalsY.add(gimbalsZ);
+	gimbalsX.add(gimbalsY);
+	gimbalsX.position=cube.position;
+	//gimbalsX.rotationAutoUpdate=false;
+	scene.add(gimbalsX);*/
+	var segmentCount = 32,
+    circleGeometry1= new THREE.Geometry(),
+    circleMaterial = new THREE.LineBasicMaterial({ color: 0x0000FF,linewidth:5});
+    var theta;
+	for (var i = 0; i <= segmentCount; i++) {
+	    theta = (i / segmentCount) * Math.PI * 2;
+	    circleGeometry1.vertices.push(
+	        new THREE.Vector3(
+	            Math.cos(theta) * 120,
+	            Math.sin(theta) * 120,
+	            0));            
+	}
+	circleGeometry2= new THREE.Geometry();
+
+	for (i = 0; i <= segmentCount; i++) {
+	    theta = (i / segmentCount) * Math.PI * 2;
+	    circleGeometry2.vertices.push(
+	        new THREE.Vector3(
+	            Math.cos(theta) * 100,
+	            Math.sin(theta) * 100,
+	            0));            
+	}
+	circleGeometry3= new THREE.Geometry();
+
+	for (i = 0; i <= segmentCount; i++) {
+	    theta = (i / segmentCount) * Math.PI * 2;
+	    circleGeometry3.vertices.push(
+	        new THREE.Vector3(
+	            Math.cos(theta) * 80,
+	            Math.sin(theta) * 80,
+	            0));            
+	}
+	gimbalsX=new THREE.Line(circleGeometry1, circleMaterial);
+	gimbalsY=new THREE.Line(circleGeometry2, circleMaterial);
+	gimbalsZ=new THREE.Line(circleGeometry3, circleMaterial);
+	gimbalsY.add(gimbalsZ);
+	gimbalsX.add(gimbalsY);
+	//gimbalsX.position=cube.position;
+	scene.add(gimbalsX);
 	scene.add(meshes);
+
 
 	var axisHelper = new THREE.AxisHelper( 500 );
 	scene.add( axisHelper );
@@ -207,9 +269,6 @@ function init(){
 	window.addEventListener( 'resize', onWindowResize, false );
 
 	controls = new THREE.OrbitControls( camera, renderer.domElement );
-	buildGui(userOpts, function(){
-		});
-
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
 	stats.domElement.style.top = '0px';
@@ -266,13 +325,19 @@ function buildGui(options,callback){
 	gui = new dat.GUI();
 	var folder1 = gui.addFolder('Euler');
 	folder1.add(options.Euler,"x").min(-180).max(180).onChange(function(value){
-		cube.rotation.x=Math.radians(value);
+		var angle=Math.radians(value);
+		cube.rotation.x=angle;
+		gimbalsX.rotation.x=angle;
 	});
 	folder1.add(options.Euler,"y").min(-180).max(180).onChange(function(value){
-		cube.rotation.y=Math.radians(value);
+		var angle=Math.radians(value);
+		cube.rotation.y=angle;
+		gimbalsY.rotation.y=angle;
 	});
 	folder1.add(options.Euler,"z").min(-180).max(180).onChange(function(value){
-		cube.rotation.z=Math.radians(value);
+		var angle=Math.radians(value);
+		cube.rotation.z=angle;
+		gimbalsZ.rotation.z=angle;
 	});
 	folder1.open();
 	var folder2= gui.addFolder('Axis-Angle');
@@ -316,6 +381,7 @@ function buildGui(options,callback){
 	folder5.add(options,'Y');
 	folder5.add(options,'Z');
 	folder5.open();
+	var folder6=gui.addFolder("Gimbals");
 }
 
 function onWindowResize() {
@@ -325,7 +391,8 @@ function onWindowResize() {
 }
 
 init();
-
+buildGui(userOpts, function(){
+});
 animate();
 
 
