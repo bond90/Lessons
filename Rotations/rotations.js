@@ -28,7 +28,7 @@ var userOpts = {
 		Y:0,
 		Z:0
 };
-var scene, camera, renderer, meshes, plane, cube, stats, controls, gui, gridXY, gridXZ, gridYZ,transformationStack,axis,rotation;
+var scene, camera, renderer, meshes, gimbals, plane, cube, stats, controls, gui, gridXY, gridXZ, gridYZ,transformationStack,axis,rotation;
 function init(){
 	var width = window.innerWidth;
 	var height = window.innerHeight;
@@ -92,7 +92,7 @@ function init(){
 	arrayFaces.push(new THREE.Face3( 1, 2, 3));
 	oldArrayFaces=[];
 	faceIndexesToRemove=[];
-	for (k=1;k<10;k++) {
+	for (k=1;k<9;k++) {
 		for(i in arrayFaces){
 			oldArrayFaces.push(arrayFaces[i]);	
 		}
@@ -139,9 +139,9 @@ function init(){
 	tetraHedron.scale.z=50;
 	tetraHedron.position.x=-100;
 	faceNormals=new THREE.FaceNormalsHelper(tetraHedron,70);
-	meshes.add(tetraHedron);
-	scene.add(faceNormals);
-	console.log("finishedSphere;")*/
+	/*meshes.add(tetraHedron);*/
+	//scene.add(faceNormals);
+	console.log("finishedSphere;")
 
 
    	axis = new THREE.Line(lineGeometry, lineMaterial);
@@ -190,29 +190,6 @@ function init(){
 	cube2.name="Cube";
 	cube2.position.x=-200;
 	cube2.add (new THREE.AxisHelper(70));
-	/*geometryX=new THREE.CircleGeometry( 120, 64);
-	geometryX.vertices.shift();
-	geometryX.vertices.verticesNeedUpdate=true;
-	geometryY=new THREE.CircleGeometry( 120, 64);
-	/*geometryY.vertices.shift();
-	geometryY.vertices.verticesNeedUpdate=true;
-	geometryZ=new THREE.CircleGeometry( 120, 64);
-	/*geometryZ.vertices.shift();
-	geometryZ.vertices.verticesNeedUpdate=true;
-	gimbalsX=new THREE.Mesh(geometryX , new THREE.LineBasicMaterial({transparent:true,opacity:0}));
-	/*gimbalsX.geometry.vertices.shift();
-	gimbalsX.geometry.verticesNeedUpdate=true;
-	gimbalsY=new THREE.Mesh(geometryY, new THREE.LineBasicMaterial(  {transparent:true,opacity:0}));
-	/*gimbalsY.geometry.vertices.shift();
-	gimbalsY.geometry.verticesNeedUpdate=true;
-	gimbalsZ=new THREE.Mesh(geometryZ, new THREE.LineBasicMaterial( {transparent:true,opacity:0} ));
-	/*gimbalsZ.geometry.vertices.shift();
-	gimbalsZ.geometry.verticesNeedUpdate=true;
-	gimbalsY.add(gimbalsZ);
-	gimbalsX.add(gimbalsY);
-	gimbalsX.position=cube.position;
-	//gimbalsX.rotationAutoUpdate=false;
-	scene.add(gimbalsX);*/
 	var segmentCount = 32,
     circleGeometry1= new THREE.Geometry(),
     circleMaterial = new THREE.LineBasicMaterial({ color: 0x0000FF,linewidth:5});
@@ -246,10 +223,16 @@ function init(){
 	            0));            
 	}
 	gimbalsX=new THREE.Line(circleGeometry1, circleMaterial);
+	//gimbalsX.rotation.y+=Math.PI/2;
 	gimbalsY=new THREE.Line(circleGeometry2, circleMaterial);
 	gimbalsZ=new THREE.Line(circleGeometry3, circleMaterial);
+	gimbalsY.rotation.z+=Math.PI/2;
 	gimbalsY.add(gimbalsZ);
 	gimbalsX.add(gimbalsY);
+	/*gimbals=new THREE.Object3D();
+	gimbals.add(gimbalsX);
+	gimbals.add(gimbalsY);
+	gimbals.add(gimbalsZ);*/
 	//gimbalsX.position=cube.position;
 	scene.add(gimbalsX);
 	scene.add(meshes);
