@@ -198,9 +198,10 @@ function init(){
 	    theta = (i / segmentCount) * Math.PI * 2;
 	    circleGeometry1.vertices.push(
 	        new THREE.Vector3(
+	        	0,
 	            Math.cos(theta) * 120,
-	            Math.sin(theta) * 120,
-	            0));            
+	            Math.sin(theta) * 120
+	            ));            
 	}
 	circleGeometry2= new THREE.Geometry();
 
@@ -209,8 +210,9 @@ function init(){
 	    circleGeometry2.vertices.push(
 	        new THREE.Vector3(
 	            Math.cos(theta) * 100,
-	            Math.sin(theta) * 100,
-	            0));            
+	            0,
+	            Math.sin(theta) * 100
+	            ));            
 	}
 	circleGeometry3= new THREE.Geometry();
 
@@ -222,18 +224,16 @@ function init(){
 	            Math.sin(theta) * 80,
 	            0));            
 	}
-	gimbalsX=new THREE.Line(circleGeometry1, circleMaterial);
-	//gimbalsX.rotation.y+=Math.PI/2;
-	gimbalsY=new THREE.Line(circleGeometry2, circleMaterial);
-	gimbalsZ=new THREE.Line(circleGeometry3, circleMaterial);
-	gimbalsY.rotation.z+=Math.PI/2;
+	gimbalsX=new THREE.Line(circleGeometry1, new THREE.LineBasicMaterial({ color: 0xFF0000,linewidth:5}));
+	gimbalsY=new THREE.Line(circleGeometry2, new THREE.LineBasicMaterial({ color: 0x00FF00,linewidth:5}));
+	gimbalsZ=new THREE.Line(circleGeometry3, new THREE.LineBasicMaterial({ color: 0x0000FF,linewidth:5}));
 	gimbalsY.add(gimbalsZ);
 	gimbalsX.add(gimbalsY);
 	/*gimbals=new THREE.Object3D();
 	gimbals.add(gimbalsX);
 	gimbals.add(gimbalsY);
 	gimbals.add(gimbalsZ);*/
-	//gimbalsX.position=cube.position;
+	gimbalsX.position=cube.position;
 	scene.add(gimbalsX);
 	scene.add(meshes);
 
