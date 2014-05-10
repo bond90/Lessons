@@ -54,6 +54,7 @@ function init(){
 	plane.overdraw = true;
 	plane.name="plane";
 	plane.position.x=100;
+	plane.userData.startPosition=plane.position.clone();
 	plane.add (new THREE.AxisHelper(30));
 	meshes.add(plane);
 	var lineGeometry = new THREE.Geometry();
@@ -66,7 +67,7 @@ function init(){
     });
 
 
-	/*var tetraHedronGeometry = new THREE.Geometry();
+	var tetraHedronGeometry = new THREE.Geometry();
 	array=[];
 	array.push(new THREE.Vector3( 1,  0, 0 ));
 	array.push(new THREE.Vector3( -1, 0, 0 ));
@@ -77,7 +78,7 @@ function init(){
 		array[i].z-=Math.sqrt(3)/3.0;
 		array[i].normalize();
 	}
-	tetraHedronGeometry.vertices.push(  );
+	tetraHedronGeometry.vertices.push( new THREE.Vector3( 1, 0, 0 ) );
 	tetraHedronGeometry.vertices.push( new THREE.Vector3( -1, 0, 0 ) );
 	tetraHedronGeometry.vertices.push( new THREE.Vector3(  0, 0, Math.sqrt(3) ) );
 	tetraHedronGeometry.vertices.push( new THREE.Vector3(  0, 2*Math.sqrt(2.0/3.0), Math.sqrt(3)/3.0 ) );
@@ -85,14 +86,14 @@ function init(){
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 1 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 3 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 3, 2 ) );
-	arrayFaces=[];
+	/*arrayFaces=[];
 	arrayFaces.push(new THREE.Face3( 0, 2, 1));
 	arrayFaces.push(new THREE.Face3( 0, 1, 3));
 	arrayFaces.push(new THREE.Face3( 0, 3, 2));
 	arrayFaces.push(new THREE.Face3( 1, 2, 3));
 	oldArrayFaces=[];
 	faceIndexesToRemove=[];
-	for (k=1;k<9;k++) {
+	for (k=1;k<1;k++) {
 		for(i in arrayFaces){
 			oldArrayFaces.push(arrayFaces[i]);	
 		}
@@ -125,9 +126,13 @@ function init(){
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 1 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 1, 3 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 2 ) );
-	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 2, 3 ) );
-
-
+	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 2, 3 ) );*/
+	tetraHedronGeometry.centroid = new THREE.Vector3();
+	for (var i = 0, l = tetraHedronGeometry.vertices.length; i < l; i++) {
+	    tetraHedronGeometry.centroid.add(tetraHedronGeometry.vertices[i]);
+	}
+	tetraHedronGeometry.centroid.divideScalar(tetraHedronGeometry.vertices.length);
+	tetraHedronGeometry.computeBoundingBox();
 	tetraHedronGeometry.computeBoundingSphere();
 	tetraHedronGeometry.computeFaceNormals();
 	tetraHedronGeometry.computeVertexNormals();
@@ -137,9 +142,10 @@ function init(){
 	tetraHedron.scale.x=50;
 	tetraHedron.scale.y=50;
 	tetraHedron.scale.z=50;
-	tetraHedron.position.x=-100;
-	faceNormals=new THREE.FaceNormalsHelper(tetraHedron,70);
-	/*meshes.add(tetraHedron);*/
+	tetraHedron.position.x=-50;
+	tetraHedron.userData.startPosition=tetraHedron.position.clone();
+	//faceNormals=new THREE.FaceNormalsHelper(tetraHedron,70);
+	meshes.add(tetraHedron);
 	//scene.add(faceNormals);
 	console.log("finishedSphere;")
 
@@ -183,13 +189,9 @@ function init(){
 	cube.name="Cube";
 	//cube.rotation.y = Math.PI * 45 / 180;
 	cube.position.x=-200;
+	cube.userData.startPosition=cube.position.clone();
 	cube.add (new THREE.AxisHelper(70));
 	meshes.add(cube);
-
-	cube2 = new THREE.Mesh(cubeGeometry, new THREE.MeshFaceMaterial( cubeMaterials ) );
-	cube2.name="Cube";
-	cube2.position.x=-200;
-	cube2.add (new THREE.AxisHelper(70));
 	var segmentCount = 32,
     circleGeometry1= new THREE.Geometry(),
     circleMaterial = new THREE.LineBasicMaterial({ color: 0x0000FF,linewidth:5});
@@ -229,10 +231,6 @@ function init(){
 	gimbalsZ=new THREE.Line(circleGeometry3, new THREE.LineBasicMaterial({ color: 0x0000FF,linewidth:5}));
 	gimbalsY.add(gimbalsZ);
 	gimbalsX.add(gimbalsY);
-	/*gimbals=new THREE.Object3D();
-	gimbals.add(gimbalsX);
-	gimbals.add(gimbalsY);
-	gimbals.add(gimbalsZ);*/
 	gimbalsX.position=cube.position;
 	scene.add(gimbalsX);
 	scene.add(meshes);
@@ -304,7 +302,7 @@ function updateCenterLocation (){
 }
 
 function buildGui(options,callback){
-	var obj = { rotate:AxisAngleRotation,quaternion:rotateWithQuaternion,matrix:rotateWithMatrix,displayGrid:true};
+	var obj = { rotate:AxisAngleRotation,quaternion:rotateWithQuaternion,matrix:rotateWithMatrix,displayGrid:true,displayGimbals:true,reset:reset};
 	gui = new dat.GUI();
 	var folder1 = gui.addFolder('Euler');
 	folder1.add(options.Euler,"x").min(-180).max(180).onChange(function(value){
@@ -330,7 +328,6 @@ function buildGui(options,callback){
 	folder2.add(options.AxisAngle,'angle');
 	folder2.add(obj,'rotate').name('Axis-Angle rotation');
 	folder2.add(obj,'quaternion').name("Quaternion");
-	folder2.open();
 	var folder3 = gui.addFolder('Rotation Matrix');
 	folder3.add(userOpts.rotationMatrix.parameters,'0').name('First angle');
 	folder3.add(userOpts.rotationMatrix.axes,'0',["x","y","z"]).name('First axis');
@@ -339,7 +336,6 @@ function buildGui(options,callback){
 	folder3.add(userOpts.rotationMatrix.parameters,'2').name('Third angle');
 	folder3.add(userOpts.rotationMatrix.axes,'2',["x","y","z"]).name('Third axis');
 	folder3.add(obj,'matrix').name('Rotate using matrices');
-	folder3.open();
 	var folder4 = gui.addFolder('Advanced');
 	folder4.add(options, 'duration').name('Duration (s)');
 	var toggleGrid=function(){
@@ -348,6 +344,11 @@ function buildGui(options,callback){
 		gridYZ.visible===true?gridYZ.visible=false:gridYZ.visible=true;
 	};
 	folder4.add(obj,'displayGrid').onChange(toggleGrid);
+	folder4.add(obj,'displayGimbals').onChange(function(){
+		gimbalsX.visible===true?gimbalsX.visible=false:gimbalsX.visible=true;
+		gimbalsY.visible===true?gimbalsY.visible=false:gimbalsY.visible=true;
+		gimbalsZ.visible===true?gimbalsZ.visible=false:gimbalsZ.visible=true;
+	});
 	var folder5 = gui.addFolder('center');
 	var meshesIndexes=[];
 	for (var i in meshes.children){
@@ -363,8 +364,7 @@ function buildGui(options,callback){
 	folder5.add(options,'X');
 	folder5.add(options,'Y');
 	folder5.add(options,'Z');
-	folder5.open();
-	var folder6=gui.addFolder("Gimbals");
+	gui.add(obj,"reset").name("Reset all positions");
 }
 
 function onWindowResize() {
@@ -479,7 +479,7 @@ Math.radians = function(deg)
 		tl.to(axis.material,userOpts.fadeDuration,{opacity:1,onStart:calculateAxis});
 		tl.add(TweenLite.to(rotation,userOpts.duration,{angle:userOpts.AxisAngle.angle,onUpdate:rotateAngle,onUpdateParams:["{self}"]}));
 		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
-		tl.to(rotation,0.01,{angle:0,precAngle:0,mesh:rotation.mesh+1});
+		tl.to(rotation,0.00001,{angle:0,precAngle:0,mesh:parseInt(i)+1});
 	}
 	tl.play();
  }
@@ -525,15 +525,19 @@ Math.radians = function(deg)
 		meshes.children[i].userData.endQuaternion=meshes.children[i].quaternion.clone().multiply(meshes.children[i].userData.rotationQuaternion);
 		tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
 		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle}));
-		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:rotation.mesh+1});
+		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:parseInt(i)+1});
 	}
 	tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:0});
 	tl.play();
  }
-/* function rotateWithEuler(prop){
- 	console.log(meshes)
+ function reset(){
  	for (var i in meshes.children){
- 		console.log(i);
- 		meshes.children[i].rotation[prop]=userOpts.Euler[prop];
+ 		console.log(meshes.children[i].userData.startPosition);
+ 		meshes.children[i].position=meshes.children[i].userData.startPosition;
+ 		meshes.rotation.x=0;
+ 		meshes.rotation.y=0;
+ 		meshes.rotation.z=0;
+ 		meshes.children[i].updateMatrix();
+
  	}
- }*/
+ }

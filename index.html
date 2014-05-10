@@ -29,8 +29,105 @@
 
             <!-- ALL SLIDES GO HERE -->
             <!-- Each section element contains an individual slide -->
+             <section>
+                <h1>WebGL</h1>
+                <p>JavaScript API that allows us to implement interactive 3D graphics, straight in the browser<br/>
+                Web standard developed by the Khronos group <a href="http://www.khronos.org">http://www.khronos.org</a></p>
+            </section>
             <section>
-                <section>
+                <h3>WebGL</h3>
+                From the website of the Khronos group:<br/>
+                <i>"WebGL is a cross-platform, royalty-free web standard for a low-level 3D graphics API based on OpenGL ES 2.0, exposed through the HTML5 Canvas element as Document Object Model interfaces"</i>
+            </section>
+            <section>
+                    <b>Canvas:</b>HTML5 element which can be used to draw graphics using scripting (usually JavaScript).<br/>
+                    WebGL runs as a specific context for the canvas element.
+            </section>
+            <section>
+            </section>
+            <section>
+                    <h3>WebGL pros</h3>
+                    <ul>
+                        <li>Cross-Browser</li>
+                        <li>Hardware-accelerated</li>
+                    </ul>
+            </section>
+            <section>
+                <h3>Cross-Browser</h3>
+                <p>
+                    WebGL is supported in all the major browsers.
+                </p>
+                <ul>
+                    <li>Chrome 9</li>
+                    <li>Firefox v4+</li>
+                    <li>Opera v12+</li>
+                    <li>Safari 5.1</li>
+                </ul>
+            </section>
+            <section>
+                <h3>Hardware-accelerated</h3>
+                WebGL draws objects on the screen directly using the GPU, thus offloading the CPU and delivering better performances.
+            </section>
+            <section>
+                <h3>Hardware-accelerated</h3>
+                The basic object is the triangle.
+                Javascript is used to generate information about where and how to create triangles, and how they should look.
+                These informations are then passed to the GPU, which returns a view of the scene.<br/>
+                The entire process is called "Rendering Pipeline".
+            </section>
+            <section>
+                <h3>WebGL cons</h3>
+                <ul>
+                    <li>Syntax quite difficult to understand.</li>
+                </ul>
+                <p>Solution: use of a library.</p>
+            </section>
+            <section>
+                        <iframe id="moon" src="http://learningwebgl.com/lessons/lesson11/index.html" width="1024" height="768" style="margin:0;overflow:hidden;border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen> </iframe>
+                        <script>
+                        document.getElementById('moon').attributeName = 'allowfullscreen';
+                        </script>
+            </section>
+            <section>
+                <p>
+                    <a href="https://gist.github.com/philogb/818017">3D model with a library (PhiloJS)</a><br/>
+                    122 Lines of code.
+                </p>
+                <p>
+                    <a href="https://github.com/gpjt/webgl-lessons/blob/master/lesson11/index.html">3D model without a library</a><br/>
+                    464 lines of code.
+                </p>
+            </section>
+            <section>
+                <h1>Three.JS</h1>
+                Library that simplifies the use of WebGL.
+                <ul>
+                    <li>Provides ready-to-use objects such as Geometries and Materials.</li>
+                    <li>Provides simple methods for objects transformations (Scaling, Translating, etc.).</li>
+                    <li>Takes care of the rendering part (shading), hiding most of the process to the programmer.</li>
+                </ul>
+            </section>
+            <section>
+                The library is available at <a href="http://threejs.org/">http://threejs.org/</a>.<br/>
+                Documentation can be found at <a href="http://threejs.org/docs/">http://threejs.org/docs/</a>.
+            </section>
+            <section>
+            Three
+            </section>
+            <section>
+            </section>
+            <section>
+            </section>
+            <section>
+            </section>
+            <section>
+            </section>
+            <section>
+            </section>
+            <section>
+            </section>
+            <section>
+                <section id="translationStart">
                     <h1>Translation</h1><br/>Function that moves every point a constant distance in a specified direction.
                 </section>
                 <section>
