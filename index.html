@@ -44,8 +44,6 @@
                     WebGL runs as a specific context for the canvas element.
             </section>
             <section>
-            </section>
-            <section>
                     <h3>WebGL pros</h3>
                     <ul>
                         <li>Cross-Browser</li>
@@ -112,7 +110,8 @@
                 Documentation can be found at <a href="http://threejs.org/docs/">http://threejs.org/docs/</a>.
             </section>
             <section>
-            Three
+                In THREE.JS, objects' transformations are described using 4x4 matrices.<br/>
+                This allows combining different transformations in just one matrix.
             </section>
             <section>
             </section>
@@ -169,10 +168,10 @@
             <section>
                 <section>
                 <h1>Reflection</h1>
+                Isometry with a hyperplane as a set of fixed points.
                 </section>
                 <section>
                 <h3>Reflection</h3>
-                 Isometry with a hyperplane as a set of fixed points.
                  <ul>
                  <li>2D set: axis</li>
                  <li>3D set: plane</li>
@@ -184,7 +183,7 @@
                 </section>
                 <section>
                 <h3>Reflection</h3>
-                Let $2=\left[\begin{array}{cccc}2_1&2_2&\dots&2_n\end{array}\right]\in R^n$;
+                Let $w=\left[\begin{array}{cccc}w_1&w_2&\dots&w_n\end{array}\right]\in R^n$;
                 the formula for the reflection in the hyperplane through the origin, orthogonal to $w$, is given by
                 $$v-2\frac{v\cdot w}{w\cdot w}w=(I-2\frac{w w}{w\cdot w})v$$
                 </section>

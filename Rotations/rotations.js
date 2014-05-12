@@ -28,7 +28,7 @@ var userOpts = {
 		Y:0,
 		Z:0
 };
-var scene, camera, renderer, meshes, gimbals, plane, cube, stats, controls, gui, gridXY, gridXZ, gridYZ,transformationStack,axis,rotation;
+var scene, camera, renderer, meshes, gimbals, plane, cube, stats, controls, gui, gridXY, gridXZ, gridYZ,transformationStack,axis,rotation,quaternionStack;
 function init(){
 	var width = window.innerWidth;
 	var height = window.innerHeight;
@@ -136,7 +136,7 @@ function init(){
 	tetraHedronGeometry.computeBoundingSphere();
 	tetraHedronGeometry.computeFaceNormals();
 	tetraHedronGeometry.computeVertexNormals();
-
+	THREE.GeometryUtils.center(tetraHedronGeometry);
 	tetraHedronMaterial=new THREE.MeshNormalMaterial({wireframe:true});
 	tetraHedron=new THREE.Mesh(tetraHedronGeometry,tetraHedronMaterial);
 	tetraHedron.scale.x=50;
@@ -272,7 +272,7 @@ function init(){
 	gridYZ.setColors( new THREE.Color(0x660000), new THREE.Color(0x660000) );
 	scene.add(gridYZ);
 	transformationStack=[];
-	transformationStack.push(new THREE.Matrix4().copy(cube.matrix));
+	quaternionStack=[];
 }
 
 function animate() { 
@@ -392,18 +392,27 @@ Math.radians = function(deg)
  	string="";
  	switch(cube.userData.last){
  		case "Quaternion":{
+ 			productQuaternion=new THREE.Quaternion();
+			for (var i in quaternionStack){
+				productQuaternion.multiply(quaternionStack[i]);
+			}
  			string+="You performed a rotation using quaternions<br/>";
  			string+="Rotation axis: $"+vector3Latex(new THREE.Vector3(cube.userData.axis[0],cube.userData.axis[1],cube.userData.axis[2]))+"$<br/><br/>";
  			string+="Rotation angle: $"+cube.userData.angle+" deg$<br/><br/>";
  			string+="Rotation quaternion: $"+quaternionLatex(cube.userData.rotationQuaternion)+"$<br/><br/>";
  			string+="Start quaternion: $"+quaternionLatex(cube.userData.startQuaternion)+"$<br/><br/>";
  			string+="End quaternion: $"+quaternionLatex(cube.userData.endQuaternion)+"$<br/><br/>";
- 			string+="This quaternion has been obtained by simply multiplying the start quaternion times the one defined by our rotation.<br/><br/>";
- 			string+="The first element of this quaternion is the cosine of half our angle, starting from zero"
+ 			string+="You rotated "+quaternionStack.length+"time(s).<br/>";
+ 			string+="The ending quaternion is the result of subsequent quaternion multiplication. This is the chain:";
+ 			string+=multiplyQuaternion(quaternionStack);
+ 			string+="And this is the result:";
+ 			string+="$"+quaternionLatex(productQuaternion)+"$";
+ 			string+="We could directly multiply the starting quaternion times this one and obtain the same rotation<br/><br/>";
+ 			//string+="The first element of this quaternion is the cosine of half the angle, starting from zero";
  			break;
  		}
  		case "AxisAngle":{
- 			console.log("AxisAngle")
+ 			console.log("AxisAngle");
  			string+="You chose the Axis-Angle Method.<br/>";
  			string+="During the rotation, a red axis appeared in the scene.";
  			string+="This axis was your chosen Rotation Axis, drawn with respect to the mesh's local reference frame.";
@@ -516,12 +525,15 @@ Math.radians = function(deg)
  		meshes.children[rotation.mesh].quaternion=meshes.children[i].userData.startQuaternion.clone().slerp(meshes.children[rotation.mesh].userData.endQuaternion,rotation.t);
  	};
 	var tl = new TimelineLite();
-	for(var i in meshes.children){
+	var i;
+	rotationQuaternion=new THREE.Quaternion().setFromAxisAngle(rotationAxis,Math.radians(userOpts.AxisAngle.angle));
+	quaternionStack.push(rotationQuaternion.clone());
+	for(i in meshes.children){
 		meshes.children[i].userData.last="Quaternion";
 		meshes.children[i].userData.axis=[userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z];
 		meshes.children[i].userData.angle=userOpts.AxisAngle.angle;
 		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion.clone();
-		meshes.children[i].userData.rotationQuaternion=new THREE.Quaternion().setFromAxisAngle(rotationAxis,Math.radians(userOpts.AxisAngle.angle));
+		meshes.children[i].userData.rotationQuaternion=rotationQuaternion;
 		meshes.children[i].userData.endQuaternion=meshes.children[i].quaternion.clone().multiply(meshes.children[i].userData.rotationQuaternion);
 		tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
 		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle}));

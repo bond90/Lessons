@@ -10,7 +10,7 @@ var userOpts = {
 var animationOpts={
 	mesh:0
 };
-var scene, camera, renderer, meshes, reflectionMeshes, reflectionPoints, cloneMeshes, line, plane, cube, reflectPlane, reflectVector, transformationStack, stats, controls, gridXY, gridXZ, gridYZ;
+var scene, camera, renderer, meshes, reflectionMeshes, reflectionPoints, line, plane, cube, reflectPlane, reflectVector, transformationStack, stats, controls, gridXY, gridXZ, gridYZ;
 
 function buildGui(options,callback){
 	var meshes={};
@@ -69,6 +69,7 @@ function setupTween()
 	var tl = new TimelineLite();
 	tl.to(reflectPlane.material,2,{opacity:0.5});
 	var HouseHolder=Math.HouseHolderMatrix();
+	transformationStack.push(HouseHolder.clone());
 	var vertexReset=function(){line.geometry.verticesNeedUpdate=true;};
 	for(i in reflectionPoints.children){
 		vector=reflectionPoints.children[i].clone().position.applyMatrix4(HouseHolder);
@@ -80,15 +81,19 @@ function setupTween()
 	}
 	tl.add("fadeOut", tl.duration());
 	var moveMesh=function(){
+		console.log(animationOpts.mesh);
+		console.log("mesh");
 		meshes.children[animationOpts.mesh].applyMatrix(HouseHolder);
-		meshes.children[animationOpts.mesh].updateMatrix();
-		animationOpts.mesh+=1;
+		//meshes.children[animationOpts.mesh].updateMatrix();
 	};
 	for (var mesh in meshes.children){
 			for(i in meshes.children[mesh].material.materials){
-				tl.to(meshes.children[mesh].material.materials[i],userOpts.duration,{opacity:0,onComplete:moveMesh},"fadeOut");
-				tl.to(meshes.children[mesh].material.materials[i],userOpts.duration,{opacity:1});
+				tl.to(meshes.children[mesh].material.materials[i],userOpts.duration,{opacity:0},"fadeOut");
 			}
+	}
+	for (i in meshes.children){
+		console.log(i);
+		tl.to(animationOpts,0.01,{mesh:parseInt(i)+1,onStart:moveMesh});
 	}
 	tl.add("fadeIn", tl.duration());
 	for (j in meshes.children){
@@ -101,6 +106,7 @@ function setupTween()
 
 
 function init(){
+	transformationStack=[];
 	var width = window.innerWidth;
 	var height = window.innerHeight;
 	renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -109,8 +115,6 @@ function init(){
 	document.body.appendChild(renderer.domElement);
 	scene = new THREE.Scene();
 	meshes=new THREE.Object3D();
-	cloneMeshes=new THREE.Mesh();
-	scene.add(cloneMeshes);
 	var lineGeometry = new THREE.Geometry();
     lineGeometry.vertices.push(new THREE.Vector3(-10, 0, 0));
     lineGeometry.vertices.push(new THREE.Vector3(0, 10, 0));
@@ -308,17 +312,16 @@ Math.HouseHolderMatrix=function(){
 		HHMatrix.elements[k]=identity.elements[k]-matrix3.elements[k];
 	}
 	HHMatrix.elements[15]=1;
-	console.log(HHMatrix);
 	return HHMatrix;
 };
 
 function setData(){
  	string="";
- 	if(transformationStack.length===1){
+ 	if(transformationStack.length===0){
  		string="You haven't reflected objects yet!";
  	}
  	else{
- 		string+="You have reflected your objects "+(transformationStack.length-1)+" times <br/>";
+ 		string+="You have reflected your objects "+(transformationStack.length)+" times <br/>";
  		string+="Figures refer to the cube mesh; the transformations are represented by the following sequence of matrices multiplications:<br/>";
  		string+=multiplyMatrices(transformationStack);
  		string+="which yields the following results:<br/><br/>";

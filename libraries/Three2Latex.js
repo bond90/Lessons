@@ -102,12 +102,21 @@ function quaternionLatex(object){
 	var string="";
 	return string+="\\left[ \\begin{array}{c}"+object.w+"&"+object.x+"&"+object.y+"&"+object.z+"\\end{array}\\right]"
 }
+function multiplyQuaternion(params,result){
+	var string="$$";
+	for(var i=params.length-1;i>=0;i--){
+		string+=quaternionLatex(params[i]);
+		//console.log(string)
+	}
+	string+="$$";
+	return string;
+}
 function multiplyMatrices(params,result){
 	var string="$$";
 	for(var i=params.length-1;i>=0;i--){
 		if(params[i] instanceof THREE.Matrix4){
 			string+=matrix4Latex(params[i]);
-
+			
 		}
 		else if(params[i] instanceof THREE.Matrix3){
 			string+=matrix3Latex(params[i]);
