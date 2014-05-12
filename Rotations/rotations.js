@@ -28,7 +28,7 @@ var userOpts = {
 		Y:0,
 		Z:0
 };
-var scene, camera, renderer, meshes, gimbals, plane, cube, stats, controls, gui, gridXY, gridXZ, gridYZ,transformationStack,axis,rotation,quaternionStack;
+var scene, camera, renderer, meshes, gimbals, plane, cube, stats, controls, gui, gridXY, gridXZ, gridYZ,transformationStack,axis,rotation,quaternionStack,lastQuaternion;
 function init(){
 	var width = window.innerWidth;
 	var height = window.innerHeight;
@@ -128,7 +128,7 @@ function init(){
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 2 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 2, 3 ) );*/
 	tetraHedronGeometry.centroid = new THREE.Vector3();
-	for (var i = 0, l = tetraHedronGeometry.vertices.length; i < l; i++) {
+	for (i = 0, l = tetraHedronGeometry.vertices.length; i < l; i++) {
 	    tetraHedronGeometry.centroid.add(tetraHedronGeometry.vertices[i]);
 	}
 	tetraHedronGeometry.centroid.divideScalar(tetraHedronGeometry.vertices.length);
@@ -147,7 +147,7 @@ function init(){
 	//faceNormals=new THREE.FaceNormalsHelper(tetraHedron,70);
 	meshes.add(tetraHedron);
 	//scene.add(faceNormals);
-	console.log("finishedSphere;")
+	console.log("finishedSphere");
 
 
    	axis = new THREE.Line(lineGeometry, lineMaterial);
@@ -196,7 +196,7 @@ function init(){
     circleGeometry1= new THREE.Geometry(),
     circleMaterial = new THREE.LineBasicMaterial({ color: 0x0000FF,linewidth:5});
     var theta;
-	for (var i = 0; i <= segmentCount; i++) {
+	for (i = 0; i <= segmentCount; i++) {
 	    theta = (i / segmentCount) * Math.PI * 2;
 	    circleGeometry1.vertices.push(
 	        new THREE.Vector3(
@@ -273,6 +273,7 @@ function init(){
 	scene.add(gridYZ);
 	transformationStack=[];
 	quaternionStack=[];
+	lastQuaternion=new THREE.Quaternion();
 }
 
 function animate() { 
@@ -302,7 +303,7 @@ function updateCenterLocation (){
 }
 
 function buildGui(options,callback){
-	var obj = { rotate:AxisAngleRotation,quaternion:rotateWithQuaternion,matrix:rotateWithMatrix,displayGrid:true,displayGimbals:true,reset:reset};
+	var obj = { rotate:AxisAngleRotation,quaternion:rotateWithQuaternion,pquaternion:rotateWithProductQuaternion,matrix:rotateWithMatrix,displayGrid:true,displayGimbals:true,reset:reset};
 	gui = new dat.GUI();
 	var folder1 = gui.addFolder('Euler');
 	folder1.add(options.Euler,"x").min(-180).max(180).onChange(function(value){
@@ -321,13 +322,14 @@ function buildGui(options,callback){
 		gimbalsZ.rotation.z=angle;
 	});
 	folder1.open();
-	var folder2= gui.addFolder('Axis-Angle');
+	var folder2= gui.addFolder('Axis-Angle and Quaternions');
 	folder2.add(options.AxisAngle,'x');
 	folder2.add(options.AxisAngle,'y');
 	folder2.add(options.AxisAngle,'z');
 	folder2.add(options.AxisAngle,'angle');
 	folder2.add(obj,'rotate').name('Axis-Angle rotation');
 	folder2.add(obj,'quaternion').name("Quaternion");
+	folder2.add(obj,'pquaternion').name("qProduct");
 	var folder3 = gui.addFolder('Rotation Matrix');
 	folder3.add(userOpts.rotationMatrix.parameters,'0').name('First angle');
 	folder3.add(userOpts.rotationMatrix.axes,'0',["x","y","z"]).name('First axis');
@@ -396,6 +398,7 @@ Math.radians = function(deg)
 			for (var i in quaternionStack){
 				productQuaternion.multiply(quaternionStack[i]);
 			}
+			lastQuaternion=productQuaternion.clone();
  			string+="You performed a rotation using quaternions<br/>";
  			string+="Rotation axis: $"+vector3Latex(new THREE.Vector3(cube.userData.axis[0],cube.userData.axis[1],cube.userData.axis[2]))+"$<br/><br/>";
  			string+="Rotation angle: $"+cube.userData.angle+" deg$<br/><br/>";
@@ -408,7 +411,14 @@ Math.radians = function(deg)
  			string+="And this is the result:";
  			string+="$"+quaternionLatex(productQuaternion)+"$";
  			string+="We could directly multiply the starting quaternion times this one and obtain the same rotation<br/><br/>";
+ 			string+="Try resetting meshes and using the \"QProduct\" Button";
  			//string+="The first element of this quaternion is the cosine of half the angle, starting from zero";
+ 			break;
+ 		}
+ 		case "Product Quaternion":{
+ 			string+="You rotated using the product quaternion.<br/>";
+ 			string+="This quaternion is the result of the multiplications of all the previous quaternions.<br/>";
+ 			string+="The new rotation is the same as the previous one.";
  			break;
  		}
  		case "AxisAngle":{
@@ -542,13 +552,40 @@ Math.radians = function(deg)
 	tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:0});
 	tl.play();
  }
+ function rotateWithProductQuaternion(){
+ 	rotation={
+ 		t:0,
+ 		mesh:0,
+ 		x:0,
+ 		y:0,
+ 		z:0,
+ 		w:1
+ 	};
+ 	var rotateAngle=function(){
+ 		meshes.children[rotation.mesh].quaternion=meshes.children[i].userData.startQuaternion.clone().slerp(meshes.children[rotation.mesh].userData.endQuaternion,rotation.t);
+ 	};
+	var tl = new TimelineLite();
+	var i;
+	rotationQuaternion=lastQuaternion;
+	for(i in meshes.children){
+		meshes.children[i].userData.last="Product Quaternion";
+		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion.clone();
+		meshes.children[i].userData.rotationQuaternion=rotationQuaternion;
+		meshes.children[i].userData.endQuaternion=meshes.children[i].quaternion.clone().multiply(meshes.children[i].userData.rotationQuaternion);
+		//tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
+		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle}));
+		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:parseInt(i)+1});
+	}
+	tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:0});
+	tl.play();
+ }
  function reset(){
  	for (var i in meshes.children){
  		console.log(meshes.children[i].userData.startPosition);
  		meshes.children[i].position=meshes.children[i].userData.startPosition;
- 		meshes.rotation.x=0;
- 		meshes.rotation.y=0;
- 		meshes.rotation.z=0;
+ 		meshes.children[i].rotation.x=0;
+ 		meshes.children[i].rotation.y=0;
+ 		meshes.children[i].rotation.z=0;
  		meshes.children[i].updateMatrix();
 
  	}
