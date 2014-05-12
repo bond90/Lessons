@@ -114,18 +114,6 @@
                 This allows combining different transformations in just one matrix.
             </section>
             <section>
-            </section>
-            <section>
-            </section>
-            <section>
-            </section>
-            <section>
-            </section>
-            <section>
-            </section>
-            <section>
-            </section>
-            <section>
                 <section id="translationStart">
                     <h1>Translation</h1><br/>Function that moves every point a constant distance in a specified direction.
                 </section>
@@ -225,11 +213,18 @@
                 </section>
                 <section>
                     <h3>2D Rotation</h3>
-                    Here's an example: we're rotating a vector $w=\left[ \begin{array}{c}1\\0\end{array}\right]$ by 90°<br/>
+                    Here's an example: rotation of a vector $w=\left[ \begin{array}{c}1\\0\end{array}\right]$ by 90°<br/>
                     <span class="fragment">$w'=\left[\begin{array}{cccc}0&1\\1&0\\\end{array}\right]\left[ \begin{array}{c}1\\0\end{array}\right]=\left[ \begin{array}{c}0\\1\end{array}\right]$</span>
                 </section>
                 <section>
                     <h3>3D Rotation</h3>
+                    4 Ways to describe it:<br/>
+                    <ul>
+                        <li>Euler Angles</li>
+                        <li>Rotation Matrices</li>
+                        <li>Axis-Angle</li>
+                        <li>Quaternion</li>
+                    </ul>
                 </section>
                 <section>
                     <h3>Euler Angles</h3>
@@ -296,7 +291,7 @@
                 </section>
                 <section>
                     <h3>3D Rotation matrices</h3>
-                    Obviously, rotations can be composed.
+                    Rotations can be composed.
                     Using rotation matrices, this means multiplying matrices.
                     Notice that, as matrix multiplication is generally not commutative, rotations aren't too.
                 </section>
@@ -306,9 +301,6 @@
                     $\left[\begin{array}{cccc}1&0&0\\0&cos(\theta)&-sin(\theta)\\0&sin(\theta)&cos(\theta)\\\end{array}\right]$<br/>
                     Result: $\left[\begin{array}{cccc}cos(\alpha)&sin(\alpha)sin(\theta)&sin(\alpha)cos(\theta)\\0&cos(\theta)&-sin(\theta)\\-sin(\alpha)&cos(\alpha)sin(\theta)&cos(\alpha)cos(\theta)\\\end{array}\right]$<br/>
                     This matrix represents a rotation by angle $\theta$ around X axis followed by a rotation by angle $\alpha$ around Y axis.
-                </section>
-                <section>
-                    <h3>3D Rotation matrices</h3>
                 </section>
                 <section>
                     <h3>Axis-Angle</h3>
@@ -324,20 +316,31 @@
                     </ul>
                     Rotation occurs following the right-hand rule.
                 </section>
-                <section>
-                    <h3>Axis-Angle</h3>
-                </section>
-                <section>
-                    <h3>Axis-Angle</h3>
+                <section id="QuaternionStart">
+                    <h3>Quaternions</h3>
+                    <p>Set that extends real numbers.<br/>
+                    Composed by object of this kind:
+                    $a + ib + jc + kd$, with $i^2=j^2=k^2=ijk=-1$
+                    </p>
                 </section>
                 <section>
                     <h3>Quaternions</h3>
+                    Together with sum and scalar real product, they form a real vector space of size 4.
                 </section>
                 <section>
                     <h3>Quaternions</h3>
+                    Given a unit vector $w=\left[\begin{array}w_x\\w_y\\w_z\end{array}\right]$ representing the rotation axis and an angle $\theta$,
+                    we can write the corresponding unit quaternion like this:
+                    $$Z=\cos\left(\frac{\theta}{2}\right)+\sin\left(\frac{\theta}{2}\right)(iw_x+jw_y+kw_z)$$
+                    The corresponding rotation of vector $v$ using quaternion $Z$ is: $ZV\overline{Z}$
                 </section>
                 <section>
                     <h3>Quaternions</h3>
+                    Pros:
+                    <ul>
+                        <li>Easy to compose: $n$ subsequent rotations correspond to a single one using the product of the $n$ quaternions.</li>
+                        <li>Numerically stabler than matrices</li>
+                    </ul>
                 </section>
                 <section>
                     <a href="./Rotations/rotations.html">Go to Rotations Demo</a>
