@@ -17,10 +17,7 @@ function buildGui(options,callback){
 	var click	= function(){
 		callback();
 	};
-	var changeBackground=function(){
-		renderer.setClearColor(userOpts.backgroundColor);
-	};
-	var obj = { Reflect:click,displayGrid:true,Background:changeBackground};
+	var obj = { Reflect:click,displayGrid:true};
 	var gui = new dat.GUI();
 	var folder1 = gui.addFolder('Reflection');
 	folder1.add(options,'a');

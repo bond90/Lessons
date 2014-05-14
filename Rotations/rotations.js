@@ -34,6 +34,7 @@ function init(){
 	var height = window.innerHeight;
 	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setSize(width, height);
+	renderer.setClearColor( 0xFFFFFF, 1);
 	document.body.appendChild(renderer.domElement);
 	scene = new THREE.Scene();
 	meshes=new THREE.Object3D();
@@ -50,13 +51,13 @@ function init(){
 	           map: THREE.ImageUtils.loadTexture('/Content/Images/3.png'),side:THREE.FrontSide,transparent:true
 	       })
 	    ];
-	plane = new THREE.Mesh(geometry,new THREE.MeshFaceMaterial( materials ));
+	/*plane = new THREE.Mesh(geometry,new THREE.MeshFaceMaterial( materials ));
 	plane.overdraw = true;
 	plane.name="plane";
 	plane.position.x=100;
 	plane.userData.startPosition=plane.position.clone();
 	plane.add (new THREE.AxisHelper(30));
-	meshes.add(plane);
+	meshes.add(plane);*/
 	var lineGeometry = new THREE.Geometry();
     lineGeometry.vertices.push(new THREE.Vector3(-10, 0, 0));
     lineGeometry.vertices.push(new THREE.Vector3(0, 10, 0));
@@ -66,6 +67,12 @@ function init(){
         opacity:0
     });
 
+
+    var torusGeometry = new THREE.TorusGeometry( 100, 40, 16, 100 );
+	var torusMaterial = new THREE.MeshNormalMaterial( {wireframe:true} );
+	var torus = new THREE.Mesh( torusGeometry, torusMaterial );
+	torus.position.x+=150;
+	meshes.add( torus );
 
 	var tetraHedronGeometry = new THREE.Geometry();
 	array=[];
@@ -237,23 +244,26 @@ function init(){
 
 
 	var axisHelper = new THREE.AxisHelper( 500 );
+	axisHelper.material.linewidth=4;
 	scene.add( axisHelper );
+
+	/*Light creation*/
 
 	var light = new THREE.AmbientLight( 0x909090 ); // soft white light
 	scene.add( light );
 	camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
 	camera.position.y = 200;
 	camera.position.z = 500;
-	camera.lookAt(plane.position);
+	//camera.lookAt(plane.position);
 	scene.add(camera);
 
 	window.addEventListener( 'resize', onWindowResize, false );
 
 	controls = new THREE.OrbitControls( camera, renderer.domElement );
-	stats = new Stats();
+	/*stats = new Stats();
 	stats.domElement.style.position = 'absolute';
 	stats.domElement.style.top = '0px';
-	document.body.appendChild( stats.domElement );
+	document.body.appendChild( stats.domElement );*/
 
 	gridXZ = new THREE.GridHelper(200, 5);
 	gridXZ.setColors( new THREE.Color(0x006600), new THREE.Color(0x006600) );
@@ -279,7 +289,7 @@ function init(){
 function animate() { 
 	requestAnimationFrame( animate );
 	render();
-	stats.update();
+	//stats.update();
 	controls.update();
 }
 
@@ -467,13 +477,7 @@ Math.radians = function(deg)
  	console.log(string);
  	document.getElementById("dialogBox").innerHTML=string;
  }
- function EulerRotation(){
- 	rotation={
- 		angle:0,
- 		precAngle:0,
- 		mesh:0
- 	};
- }
+ 
  function AxisAngleRotation(){
  	var rotationAxis=new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize();
  	rotation={

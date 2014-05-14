@@ -40,7 +40,7 @@
                 <i>"WebGL is a cross-platform, royalty-free web standard for a low-level 3D graphics API based on OpenGL ES 2.0, exposed through the HTML5 Canvas element as Document Object Model interfaces"</i>
             </section>
             <section>
-                    <b>Canvas:</b>HTML5 element which can be used to draw graphics using scripting (usually JavaScript).<br/>
+                    <b>Canvas:</b> HTML5 element which can be used to draw graphics using scripting (usually JavaScript).<br/>
                     WebGL runs as a specific context for the canvas element.
             </section>
             <section>
@@ -81,7 +81,7 @@
                 <p>Solution: use of a library.</p>
             </section>
             <section>
-                        <iframe id="moon" src="http://learningwebgl.com/lessons/lesson11/index.html" width="1024" height="768" style="margin:0;overflow:hidden;border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen> </iframe>
+                        <iframe id="moon" src="http://learningwebgl.com/lessons/lesson11/index.html" width="1366" height="768" style="margin:0;overflow:hidden;border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen> </iframe>
                         <script>
                         document.getElementById('moon').attributeName = 'allowfullscreen';
                         </script>
@@ -117,7 +117,7 @@
                 Three.JS offers many useful tools for linear algebra.
                 <ul>
                     <li>Classes: THREE.Vector4, THREE.Matrix4, THREE.Quaternion, ecc.</li>
-                    <li>Methods: vector dot and scalar product, matrix multiplication, ecc..
+                    <li>Methods: vector dot and scalar product, matrix multiplication, ecc.</li>
                 </ul>
             </section>
             <section>
@@ -180,12 +180,12 @@
                 <h3>Reflection</h3>
                 Let $w=\left[\begin{array}{cccc}w_1&w_2&\dots&w_n\end{array}\right]\in R^n$;
                 the formula for the reflection in the hyperplane through the origin, orthogonal to $w$, is given by
-                $$v-2\frac{v\cdot w}{w\cdot w}w=(I-2\frac{w w}{w\cdot w})v$$
+                $$I-2\frac{w w^T}{w^T w}v$$
                 </section>
                 <section>
                 <h3>Reflection</h3>
                 Let's break the formula apart:<br/>
-                <span class="fragment"><p>$\frac{w w}{w\cdot w}$ is the matrix associated to the orthogonal projection on vector $w$. This gives us the direction orthogonal to the reflection hyperplane</p></span>
+                <span class="fragment"><p>$\frac{w w^T}{w^Tw}$ is the matrix associated to the orthogonal projection on vector $w$. This gives us the direction orthogonal to the reflection hyperplane</p></span>
                 <img src="/Content/Images/projectionVector.png" width="474px" height="392"></img>
                 </section>
                 <section>
@@ -195,13 +195,12 @@
                 </section>
                 <section>
                 <h3>Reflection</h3>
-                The matrix $P=I-2\frac{w w}{w\cdot w}$ is called "HouseHolder Matrix".<br/>
+                The matrix $P=I-2\frac{w w^T}{w^T w}$ is called "Householder Matrix".<br/>
                 Properties:
                 <ul>
-                    <li>$P$ is orthogonal, with $Det(P)=-1$.</li>
-                    <li>$P*P=P^2=I$. $P$ represents an involutary transformation.</li>
-                    <li>$Det(P^2)=1$.
-                </ul>
+                    <li>$P$ is orthogonal, with $\det(P)=-1$.</li>
+                    <li>$P*P=P^2=I$. $P$ represents an involutory transformation.</li
+ >               </ul>
                 </section>
                 <section>
                     <a href="./Reflections/reflections.html">Go to Reflections Demo</a>
@@ -212,13 +211,13 @@
                 <h1>Rotations</h1>
                 </section>
                 <section>
-                   Rotation: progressive radial orientation to a common point that lies within the axis of the motion.
-                   The axis is 90 degrees perpendicular to the plane of the motion.
+                   Rotation: Rigid transformation that does not modify the orientation.
+                   Represented by an orthogonal matrix $Q$ with $\det(Q)=1$.
                 </section>
                 <section>
                     <h3>2D Rotation</h3>
                     In two dimensions, a rotation can be represented using a 2x2 matrix:
-                     $$\left[\begin{array}{cccc}cos(\theta)&-sin(\theta)\\sin(\theta)&cos(\theta)\\\end{array}\right]$$
+                     $$\left[\begin{array}{cccc}\cos\theta&-\sin\theta\\\sin\theta&\cos\theta\\\end{array}\right]$$
                 </section>
                 <section>
                     <h3>2D Rotation</h3>
@@ -227,7 +226,7 @@
                 </section>
                 <section>
                     <h3>3D Rotation</h3>
-                    Four methods:
+                    Four methods:<br/>
                     <ul>
                         <li>Euler Angles</li>
                         <li>Rotation Matrices</li>
@@ -293,20 +292,20 @@
                 <section>
                     <h3>3D Rotation matrices</h3>
                     The following three matrices represent a rotation by a $\theta$ angle around the X axis, Y axis and Z axis respectively:
-                    $\left[\begin{array}{cccc}1&0&0\\0&cos(\theta)&-sin(\theta)\\0&sin(\theta)&cos(\theta)\\\end{array}\right]$
-                    $\left[\begin{array}{cccc}cos(\theta)&0&sin(\theta)\\0&1&0\\-sin(\theta)&0&cos(\theta)\\\end{array}\right]$
-                    $\left[\begin{array}{cccc}cos(\theta)&-sin(\theta)&0\\sin(\theta)&cos(\theta)&0\\0&0&1\\\end{array}\right]$
+                    $\left[\begin{array}{cccc}1&0&0\\0&\cos\theta&-\sin\theta\\0&\sin\theta&\cos\theta\\\end{array}\right]$
+                    $\left[\begin{array}{cccc}\cos\theta&0&\sin\theta\\0&1&0\\-\sin\theta&0&\cos\theta\\\end{array}\right]$
+                    $\left[\begin{array}{cccc}\cos\theta&-\sin\theta&0\\\sin\theta&\cos\theta&0\\0&0&1\\\end{array}\right]$
                 </section>
                 <section>
                     <h3>3D Rotation matrices</h3>
-                    Composition $\rightarrow$ multiplying matrices.
+                    Composition $\rightarrow$ multiplying matrices.<br/>
                     Not commutative $\rightarrow$ order matters!
                 </section>
                 <section>
                     Example:<br/>
-                    $\left[\begin{array}{cccc}cos(\theta)&0&sin(\theta)\\0&1&0\\-sin(\theta)&0&cos(\theta)\\\end{array}\right]$
-                    $\left[\begin{array}{cccc}1&0&0\\0&cos(\theta)&-sin(\theta)\\0&sin(\theta)&cos(\theta)\\\end{array}\right]$<br/>
-                    Result: $\left[\begin{array}{cccc}cos(\alpha)&sin(\alpha)sin(\theta)&sin(\alpha)cos(\theta)\\0&cos(\theta)&-sin(\theta)\\-sin(\alpha)&cos(\alpha)sin(\theta)&cos(\alpha)cos(\theta)\\\end{array}\right]$<br/>
+                    $\left[\begin{array}{cccc}\cos\theta&0&\sin\theta\\0&1&0\\-\sin\theta&0&\cos\theta\\\end{array}\right]$
+                    $\left[\begin{array}{cccc}1&0&0\\0&\cos\theta&-sin\theta\\0&sin\theta&cos\theta\\\end{array}\right]$<br/>
+                    Result: $\left[\begin{array}{cccc}\cos\alpha&\sin\alpha\sin\theta&\sin\alpha\cos\theta\\0&\cos\theta&-\sin\theta\\-\sin\alpha&\cos\alpha\sin\theta&\cos\alpha\cos\theta\\\end{array}\right]$<br/>
                     This matrix represents a rotation by angle $\theta$ around X axis followed by a rotation by angle $\alpha$ around Y axis.
                 </section>
                 <section>
@@ -336,10 +335,13 @@
                 </section>
                 <section>
                     <h3>Quaternions</h3>
-                    Given a unit vector $w=\left[\begin{array}w_x\\w_y\\w_z\end{array}\right]$ representing the rotation axis and an angle $\theta$,
+                    Given a unit vector $w=\left[\begin{array}{c} w_x\\w_y\\w_z\end{array}\right]$ representing the rotation axis and an angle $\theta$,
                     we can write the corresponding unit quaternion like this:
                     $$Z=\cos\left(\frac{\theta}{2}\right)+\sin\left(\frac{\theta}{2}\right)(iw_x+jw_y+kw_z)$$
-                    The corresponding rotation of vector $v$ using quaternion $Z$ is: $ZV\overline{Z}$
+                </section>
+                <section>
+                    The corresponding rotation of vector $v$ using quaternion $Z$ is: $ZV\overline{Z}$,<br/>
+                    where $\overline{Z}$ is the conjugate of quaternion $Z$, that is the same quaternion with opposite signs for the vector part.
                 </section>
                 <section>
                     <h3>Quaternions</h3>
@@ -350,8 +352,22 @@
                     </ul>
                 </section>
                 <section>
+                    <img src="Content/Images/rotations.svg" width="150%" height="150%"></img>
+                </section>
+                <section>
                     <a href="./Rotations/rotations.html">Go to Rotations Demo</a>
                 </section>
+            </section>
+            <section>
+                Libraries:<br/>
+                <ul>
+                    <li><a href="http://lab.hakim.se/reveal-js/#/">reveal.js:</a>web presentations library.</li>
+                    <li><a href="http://threejs.org/">THREE.js</a>:WebGl API.</li>
+                    <li><a href="http://www.mathjax.org/">mathJax.js</a>: LaTeX typesetting.</li>
+                    <li><a href="https://code.google.com/p/dat-gui/">DAT.gui</a>:controls display.</li>
+                    <li><a href="http://jqueryui.com/">jQueryUI</a>: popup boxes.</li>
+                    <li><a href="http://www.greensock.com/gsap-js/">gsap-js</a>: animations.</li>
+                </ul>
             </section>
         </div>
     </div>

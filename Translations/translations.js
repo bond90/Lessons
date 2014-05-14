@@ -13,11 +13,16 @@ var userOpts = {
 };
 var scene, camera, renderer, plane, meshes, stats, controls, gridXY, gridXZ, gridYZ,gui,transformationStack;
 function init(){
+
 	var width = window.innerWidth;
 	var height = window.innerHeight;
+	/*Renderer creation*/
 	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setSize(width, height);
+	renderer.setClearColorHex( 0xFFFFFF, 1 );
+
 	document.body.appendChild(renderer.domElement);
+	/*Scene creation*/
 	scene = new THREE.Scene();
 
 	meshes=new THREE.Object3D();
@@ -35,6 +40,8 @@ function init(){
 	plane.name="plane";
 	plane.userData.startPos=plane.position.clone();
 	meshes.add(plane);
+
+	/*Cube creation*/
 	var cubeGeometry = new THREE.CubeGeometry(100, 100, 100);
     var cubeMaterials = [
        new THREE.MeshLambertMaterial({
@@ -66,10 +73,13 @@ function init(){
 
 	scene.add(meshes);
 
-	var axisHelper=new THREE.AxisHelper(200);
+	axisHelper=new THREE.AxisHelper(200);
+	axisHelper.material.linewidth=4;
 	scene.add(axisHelper);
 	var light = new THREE.AmbientLight( 0x909090 ); // soft white light
 	scene.add( light );
+
+	/*Camera initialization*/
 	camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
 	camera.position.y = 160;
 	camera.position.z = 400;
@@ -88,10 +98,10 @@ function init(){
 			setupTween();
 		});
 
-	stats = new Stats();
+	/*stats = new Stats();
 	stats.domElement.style.position = 'absolute';
 	stats.domElement.style.top = '0px';
-	document.body.appendChild( stats.domElement );
+	document.body.appendChild( stats.domElement );*/
 
 	gridXZ = new THREE.GridHelper(200, 5);
 	gridXZ.setColors( new THREE.Color(0x006600), new THREE.Color(0x006600) );
@@ -114,7 +124,7 @@ function init(){
 function animate() { 
 	requestAnimationFrame( animate );
 	render();
-	stats.update();
+	//stats.update();
 	controls.update();
 }
 
@@ -161,7 +171,7 @@ function updateCenterLocation (){
     		gui.__folders.center.__controllers[i].updateDisplay();
   	}
 }
-
+/*Gui creation*/
 function buildGui(options,callback){
 	var obj = { Translate:function(){
 				callback();
@@ -216,18 +226,6 @@ function onWindowResize() {
 				renderer.setSize( window.innerWidth, window.innerHeight );
 }
 
-function translateWithMatrix(matrix)
-{
-	userOpts.transX=matrix.n14;
-	userOpts.transY=matrix.n24;
-	userOpts.transZ=matrix.n34;
-	setupTween();
-}
-
-init();
-
-animate();
-
 function setData(){
  	string="";
  	cube=meshes.children[1];
@@ -251,3 +249,8 @@ function setData(){
  	}
  	document.getElementById("dialogBox").innerHTML=string;
 }
+
+
+init();
+
+animate();
