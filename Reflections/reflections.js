@@ -10,97 +10,7 @@ var userOpts = {
 var animationOpts={
 	mesh:0
 };
-var scene, camera, renderer, meshes, reflectionMeshes, reflectionPoints, line, plane, cube, reflectPlane, reflectVector, transformationStack, stats, controls, gridXY, gridXZ, gridYZ;
-
-function buildGui(options,callback){
-	var meshes={};
-	var click	= function(){
-		callback();
-	};
-	var obj = { Reflect:click,displayGrid:true};
-	var gui = new dat.GUI();
-	var folder1 = gui.addFolder('Reflection');
-	folder1.add(options,'a');
-	folder1.add(options,'b');
-	folder1.add(options,'c');
-	folder1.add(obj,'Reflect');
-	folder1.open();
-	var folder2 = gui.addFolder('Advanced');
-	folder2.add(options, 'duration').name('Duration (ms)');
-	var toggleGrid=function(){
-		gridXY.visible===true?gridXY.visible=false:gridXY.visible=true;
-		gridXZ.visible===true?gridXZ.visible=false:gridXZ.visible=true;
-		gridYZ.visible===true?gridYZ.visible=false:gridYZ.visible=true;
-	};
-	folder2.add(obj,'displayGrid').onChange(toggleGrid);
-}
-
-/*
-Setup the animation and execute it.
-First, a sphere is placed on each vertex of each mesh in the scene.
-Then, each sphere is moved to its new location.
-Finally, the new meshes fade in 
-*/
-
-function setupTween()
-{
-	var i,j;
-	animationOpts.mesh=0;
-	setReflectionPlane();
-	reflectPlane.material.opacity=0;
-	reflectPlane.visible=true;
-	for ( i=reflectionPoints.children.length-1;i>=0;i--){
-		reflectionPoints.remove(reflectionPoints.children[i]);
-	}
-	var point;
-	var vector;
-	for(j in meshes.children){
-		for (i in meshes.children[j].geometry.vertices){
-			point=new THREE.Mesh(new THREE.SphereGeometry(5, 3, 3), new THREE.MeshNormalMaterial());
-			vector = meshes.children[j].geometry.vertices[i].clone();
-			vector.applyMatrix4(meshes.children[j].matrixWorld);
-			point.position=vector;
-			reflectionPoints.add(point);
-		}
-	}
-	var tl = new TimelineLite();
-	tl.to(reflectPlane.material,2,{opacity:0.5});
-	var HouseHolder=Math.HouseHolderMatrix();
-	transformationStack.push(HouseHolder.clone());
-	var vertexReset=function(){line.geometry.verticesNeedUpdate=true;};
-	for(i in reflectionPoints.children){
-		vector=reflectionPoints.children[i].clone().position.applyMatrix4(HouseHolder);
-		tl.to(line.geometry.vertices[0],0.01,{x:reflectionPoints.children[i].position.x,y:reflectionPoints.children[i].position.y,z:reflectionPoints.children[i].position.z});
-		tl.to(line.geometry.vertices[1],0.01,{x:vector.x,y:vector.y,z:vector.z,onComplete:vertexReset});
-		tl.to(line.material,userOpts.duration,{opacity:1});
-		tl.to(reflectionPoints.children[i].position,userOpts.duration,{x:vector.x,y:vector.y,z:vector.z,ease:userOpts.easing});
-		tl.to(line.material,userOpts.duration,{opacity:0});
-	}
-	tl.add("fadeOut", tl.duration());
-	var moveMesh=function(){
-		console.log(animationOpts.mesh);
-		console.log("mesh");
-		meshes.children[animationOpts.mesh].applyMatrix(HouseHolder);
-		//meshes.children[animationOpts.mesh].updateMatrix();
-	};
-	for (var mesh in meshes.children){
-			for(i in meshes.children[mesh].material.materials){
-				tl.to(meshes.children[mesh].material.materials[i],userOpts.duration,{opacity:0},"fadeOut");
-			}
-	}
-	for (i in meshes.children){
-		console.log(i);
-		tl.to(animationOpts,0.01,{mesh:parseInt(i)+1,onStart:moveMesh});
-	}
-	tl.add("fadeIn", tl.duration());
-	for (j in meshes.children){
-			for(i in meshes.children[j].material.materials){
-				tl.to(meshes.children[j].material.materials[i],userOpts.duration,{opacity:1},"fadeIn");
-		}
-	}
-	tl.play();
-}
-
+var scene, camera, renderer, meshes, reflectionMeshes, reflectionPoints, line, plane, cube, reflectPlane, reflectVector, reflectionVectorMesh, transformationStack, stats, controls, gridXY, gridXZ, gridYZ;
 
 function init(){
 	transformationStack=[];
@@ -108,7 +18,7 @@ function init(){
 	var height = window.innerHeight;
 	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setSize(width, height);
-	renderer.setClearColor( 0x111111, 1);
+	renderer.setClearColor( 0xFFFFFF, 1);
 	document.body.appendChild(renderer.domElement);
 	scene = new THREE.Scene();
 	meshes=new THREE.Object3D();
@@ -122,6 +32,20 @@ function init(){
     });
     line = new THREE.Line(lineGeometry, lineMaterial);
     scene.add(line);
+
+
+    var vectorGeometry = new THREE.Geometry();
+    vectorGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
+    vectorGeometry.vertices.push(new THREE.Vector3(0, 10, 0));
+    var vectorMaterial = new THREE.LineBasicMaterial({
+        color: 0xffff00,
+        transparent:true,
+        opacity:0
+    });
+    reflectionVectorMesh=new THREE.Mesh(vectorGeometry,vectorMaterial);
+ 	scene.add(reflectionVectorMesh);
+
+
 
 	var geometry = new THREE.PlaneGeometry(25, 25, 1, 1);
 	var geometry2 = geometry.clone();
@@ -179,7 +103,8 @@ function init(){
 	cube = new THREE.Mesh(cubeGeometry, new THREE.MeshFaceMaterial( cubeMaterials ) );
 	cube.name="Cube";
 	//cube.rotation.y = Math.PI * 45 / 180;
-	cube.position.x=-200;
+	cube.position.x=-100;
+	cube.position.z=50;
 	meshes.add(cube);
 
 	var sphere = new THREE.Mesh(new THREE.SphereGeometry(50, 100, 100), new THREE.MeshNormalMaterial());
@@ -206,6 +131,7 @@ function init(){
 
 	scene.add(reflectionMeshes);
 	var axisHelper = new THREE.AxisHelper( 500 );
+	axisHelper.material.linewidth=4;
 	scene.add( axisHelper );
 
 	var light = new THREE.AmbientLight( 0x909090 ); // soft white light
@@ -245,6 +171,101 @@ function init(){
 	gridYZ.rotation.z = Math.PI/2;
 	gridYZ.setColors( new THREE.Color(0x660000), new THREE.Color(0x660000) );
 	scene.add(gridYZ);
+}
+
+function buildGui(options,callback){
+	var meshes={};
+	var click	= function(){
+		callback();
+	};
+	var obj = { Reflect:click,displayGrid:true};
+	var gui = new dat.GUI();
+	var folder1 = gui.addFolder('Reflection');
+	folder1.add(options,'a');
+	folder1.add(options,'b');
+	folder1.add(options,'c');
+	folder1.add(obj,'Reflect');
+	folder1.open();
+	var folder2 = gui.addFolder('Advanced');
+	folder2.add(options, 'duration').name('Duration (ms)');
+	var toggleGrid=function(){
+		gridXY.visible===true?gridXY.visible=false:gridXY.visible=true;
+		gridXZ.visible===true?gridXZ.visible=false:gridXZ.visible=true;
+		gridYZ.visible===true?gridYZ.visible=false:gridYZ.visible=true;
+	};
+	folder2.add(obj,'displayGrid').onChange(toggleGrid);
+}
+
+/*
+Setup the animation and execute it.
+First, a sphere is placed on each vertex of each mesh in the scene.
+Then, each sphere is moved to its new location.
+Finally, the new meshes fade in 
+*/
+
+function setupTween()
+{
+	var i,j;
+	animationOpts.mesh=0;
+	setReflectionPlane();
+	reflectPlane.material.opacity=0;
+	reflectPlane.visible=true;
+	reflectionVectorMesh.geometry.vertices[1].x=reflectVector.x*30;
+	reflectionVectorMesh.geometry.vertices[1].y=reflectVector.y*30;
+	reflectionVectorMesh.geometry.vertices[1].z=reflectVector.z*30;
+	reflectionVectorMesh.geometry.verticesNeedUpdate=true;
+	reflectionVectorMesh.visible=true;
+	for ( i=reflectionPoints.children.length-1;i>=0;i--){
+		reflectionPoints.remove(reflectionPoints.children[i]);
+	}
+	var point;
+	var vector;
+	for(j in meshes.children){
+		for (i in meshes.children[j].geometry.vertices){
+			point=new THREE.Mesh(new THREE.SphereGeometry(5, 3, 3), new THREE.MeshNormalMaterial());
+			vector = meshes.children[j].geometry.vertices[i].clone();
+			vector.applyMatrix4(meshes.children[j].matrixWorld);
+			point.position=vector;
+			reflectionPoints.add(point);
+		}
+	}
+	var tl = new TimelineLite();
+	tl.to(reflectPlane.material,2,{opacity:0.5});
+	tl.to(reflectionVectorMesh.material,0.01,{opacity:1});
+	var HouseHolder=Math.HouseHolderMatrix();
+	transformationStack.push(HouseHolder.clone());
+	var vertexReset=function(){line.geometry.verticesNeedUpdate=true;};
+	for(i in reflectionPoints.children){
+		vector=reflectionPoints.children[i].clone().position.applyMatrix4(HouseHolder);
+		tl.to(line.geometry.vertices[0],0.01,{x:reflectionPoints.children[i].position.x,y:reflectionPoints.children[i].position.y,z:reflectionPoints.children[i].position.z});
+		tl.to(line.geometry.vertices[1],0.01,{x:vector.x,y:vector.y,z:vector.z,onComplete:vertexReset});
+		tl.to(line.material,userOpts.duration,{opacity:1});
+		tl.to(reflectionPoints.children[i].position,userOpts.duration,{x:vector.x,y:vector.y,z:vector.z,ease:userOpts.easing});
+		tl.to(line.material,userOpts.duration,{opacity:0});
+	}
+	tl.add("fadeOut", tl.duration());
+	var moveMesh=function(){
+		console.log(animationOpts.mesh);
+		console.log("mesh");
+		meshes.children[animationOpts.mesh].applyMatrix(HouseHolder);
+		//meshes.children[animationOpts.mesh].updateMatrix();
+	};
+	for (var mesh in meshes.children){
+			for(i in meshes.children[mesh].material.materials){
+				tl.to(meshes.children[mesh].material.materials[i],userOpts.duration,{opacity:0},"fadeOut");
+			}
+	}
+	for (i in meshes.children){
+		console.log(i);
+		tl.to(animationOpts,0.01,{mesh:parseInt(i)+1,onStart:moveMesh});
+	}
+	tl.add("fadeIn", tl.duration());
+	for (j in meshes.children){
+			for(i in meshes.children[j].material.materials){
+				tl.to(meshes.children[j].material.materials[i],userOpts.duration,{opacity:1},"fadeIn");
+		}
+	}
+	tl.play();
 }
 
 function animate() { 

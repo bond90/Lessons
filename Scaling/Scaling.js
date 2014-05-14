@@ -13,8 +13,10 @@ function init(){
 	var height = window.innerHeight;
 	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setSize(width, height);
+	renderer.setClearColorHex( 0xFFFFFF, 1 );
 	document.body.appendChild(renderer.domElement);
 	scene = new THREE.Scene();
+	/*Plane creation*/
 	meshes=new THREE.Object3D();
 	var geometry = new THREE.PlaneGeometry(25, 25, 1, 1);
 	var geometry2 = geometry.clone();
@@ -34,16 +36,8 @@ function init(){
 	plane.name="plane";
 	plane.position.x=100;
 	meshes.add(plane);
-	var lineGeometry = new THREE.Geometry();
-    lineGeometry.vertices.push(new THREE.Vector3(-10, 0, 0));
-    lineGeometry.vertices.push(new THREE.Vector3(0, 10, 0));
-    var lineMaterial = new THREE.LineBasicMaterial({
-        color: 0xff0000,
-        transparent:true,
-        opacity:0
-    });
-    axis = new THREE.Line(lineGeometry, lineMaterial);
-    scene.add(axis);
+
+	/*Cube creation*/
 	var cubeGeometry = new THREE.CubeGeometry(100, 100, 100);
     var cubeMaterials = [
        new THREE.MeshLambertMaterial({
@@ -79,19 +73,26 @@ function init(){
     ];
 	cube = new THREE.Mesh(cubeGeometry, new THREE.MeshFaceMaterial( cubeMaterials ) );
 	cube.name="Cube";
-	//cube.rotation.y = Math.PI * 45 / 180;
-	cube.position.x=-200;
+	cube.position.x=-100;
+	cube.position.z=50;
 	meshes.add(cube);
 
-	var sphere = new THREE.Mesh(new THREE.SphereGeometry(50, 100, 100), new THREE.MeshNormalMaterial());
-    sphere.overdraw = true;
-    sphere.position.x=-200;
-    sphere.position.y=-100;
-    //meshes.add(sphere);
+	/*Axis used for animation*/
+	var lineGeometry = new THREE.Geometry();
+    lineGeometry.vertices.push(new THREE.Vector3(-10, 0, 0));
+    lineGeometry.vertices.push(new THREE.Vector3(0, 10, 0));
+    var lineMaterial = new THREE.LineBasicMaterial({
+        color: 0xff0000,
+        transparent:true,
+        opacity:0
+    });
+    axis = new THREE.Line(lineGeometry, lineMaterial);
+    scene.add(axis);
 
 	scene.add(meshes);
 
 	var axisHelper = new THREE.AxisHelper( 500 );
+	axisHelper.material.linewidth=4;
 	scene.add( axisHelper );
 
 	var light = new THREE.AmbientLight( 0x909090 ); // soft white light
@@ -99,7 +100,6 @@ function init(){
 	camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
 	camera.position.y = 200;
 	camera.position.z = 500;
-	camera.lookAt(plane.position);
 	scene.add(camera);
 
 	window.addEventListener( 'resize', onWindowResize, false );
@@ -110,11 +110,11 @@ function init(){
 			setupTween();
 		});
 
-	stats = new Stats();
+	/*stats = new Stats();
 	stats.domElement.style.position = 'absolute';
 	stats.domElement.style.top = '0px';
-	document.body.appendChild( stats.domElement );
-
+	document.body.appendChild( stats.domElement );*/
+	/*Grids creation */
 	gridXZ = new THREE.GridHelper(200, 5);
 	gridXZ.setColors( new THREE.Color(0x006600), new THREE.Color(0x006600) );
 	gridXZ.position.set( 0,-200,0 );
@@ -138,7 +138,7 @@ function init(){
 function animate() { 
 	requestAnimationFrame( animate );
 	render();
-	stats.update();
+	//stats.update();
 	controls.update();
 }
 
@@ -163,7 +163,6 @@ function setupTween()
 		meshScalingVector=meshes.children[i].scale;
 		tl.to(axis.geometry.vertices[0],0.01,{x:meshes.children[i].position.x-200,y:meshes.children[i].position.y,z:meshes.children[i].position.z});
 		tl.to(axis.geometry.vertices[1],0.01,{x:meshes.children[i].position.x+200,y:meshes.children[i].position.y,z:meshes.children[i].position.z,onComplete:vertexReset});
-		//tl.to(axis.geometry.vertices[1],0.01,{x:meshes.children[i].position.x+1,onComplete:vertexReset});
 		tl.to(axis.material,userOpts.fadeDuration,{opacity:1});
 		tl.to(meshScalingVector,userOpts.duration,{x:meshScalingVector.x*userOpts.x});
 		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
@@ -189,9 +188,6 @@ function buildGui(options,callback){
 		userOpts.x=1;
 		userOpts.y=1;
 		userOpts.z=1;
-		/*gui.__controllers["x"].updateDisplay();
-		gui.__controllers["y"].updateDisplay();
-		gui.__controllers["z"].updateDisplay();*/
 	};
 	var obj = { Scale:Scale,displayGrid:true};
 	var gui = new dat.GUI();
@@ -201,12 +197,9 @@ function buildGui(options,callback){
 	folder1.add(options,'z');
 	folder1.add(obj,'Scale');
 	folder1.open();
-	/*var body=document.getElementsByTagName["body"];
-	console.log(body)*/
 	var folder2 = gui.addFolder('Advanced');
 	folder2.add(options, 'duration').name('Duration (s)');
 	folder2.add(options, 'fadeDuration').name('Fade Duration (s)');
-	//folder2.addColor(body, '.style.background-color').name('Background-color');
 	var toggleGrid=function(){
 		gridXY.visible===true?gridXY.visible=false:gridXY.visible=true;
 		gridXZ.visible===true?gridXZ.visible=false:gridXZ.visible=true;

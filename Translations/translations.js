@@ -38,6 +38,7 @@ function init(){
 	plane = new THREE.Mesh(new THREE.PlaneGeometry(25, 25), new THREE.MeshFaceMaterial(materials,THREE.DoubleSide));
 	plane.overdraw = true;
 	plane.name="plane";
+	plane.position.x=100;
 	plane.userData.startPos=plane.position.clone();
 	meshes.add(plane);
 
@@ -67,7 +68,7 @@ function init(){
 	var cube = new THREE.Mesh(cubeGeometry, new THREE.MeshFaceMaterial( cubeMaterials ) );
 	cube.name="Cube";
 	cube.rotation.y = Math.PI * 45 / 180;
-	cube.position.x=-200;
+	cube.position.x=-100;
 	cube.userData.startPos=cube.position.clone();
 	meshes.add(cube);
 

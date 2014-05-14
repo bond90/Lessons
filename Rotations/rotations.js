@@ -67,13 +67,7 @@ function init(){
         opacity:0
     });
 
-
-    var torusGeometry = new THREE.TorusGeometry( 100, 40, 16, 100 );
-	var torusMaterial = new THREE.MeshNormalMaterial( {wireframe:true} );
-	var torus = new THREE.Mesh( torusGeometry, torusMaterial );
-	torus.position.x+=150;
-	meshes.add( torus );
-
+	/*A custom tetrahedron geometry
 	var tetraHedronGeometry = new THREE.Geometry();
 	array=[];
 	array.push(new THREE.Vector3( 1,  0, 0 ));
@@ -92,7 +86,7 @@ function init(){
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 1 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 3 ) );
-	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 3, 2 ) );
+	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 3, 2 ) );*/
 	/*arrayFaces=[];
 	arrayFaces.push(new THREE.Face3( 0, 2, 1));
 	arrayFaces.push(new THREE.Face3( 0, 1, 3));
@@ -133,7 +127,7 @@ function init(){
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 1 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 1, 3 ) );
 	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 2 ) );
-	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 2, 3 ) );*/
+	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 2, 3 ) );
 	tetraHedronGeometry.centroid = new THREE.Vector3();
 	for (i = 0, l = tetraHedronGeometry.vertices.length; i < l; i++) {
 	    tetraHedronGeometry.centroid.add(tetraHedronGeometry.vertices[i]);
@@ -151,11 +145,18 @@ function init(){
 	tetraHedron.scale.z=50;
 	tetraHedron.position.x=-50;
 	tetraHedron.userData.startPosition=tetraHedron.position.clone();
-	//faceNormals=new THREE.FaceNormalsHelper(tetraHedron,70);
-	meshes.add(tetraHedron);
-	//scene.add(faceNormals);
-	console.log("finishedSphere");
+	//faceNormals=new THREE.FaceNormalsHelper(tetraHedron,70);*/
+	var torusGeometry = new THREE.TorusGeometry( 100, 40, 16, 100 );
+	var torusMaterial = new THREE.MeshNormalMaterial( {wireframe:true} );
+	var torus = new THREE.Mesh( torusGeometry, torusMaterial );
+	torus.position.x+=150;
+	meshes.add( torus );
 
+	tetraHedronGeometry= new THREE.TetrahedronGeometry( 50, 0 );
+	tetraHedronMaterial=new THREE.MeshNormalMaterial({wireframe:true,linewidth:5});
+	tetraHedron= new THREE.Mesh(tetraHedronGeometry, tetraHedronMaterial);
+	tetraHedron.position.x=-50;
+	meshes.add(tetraHedron);
 
    	axis = new THREE.Line(lineGeometry, lineMaterial);
     scene.add(axis);
@@ -391,16 +392,133 @@ buildGui(userOpts, function(){
 animate();
 
 
-Math.degrees = function(rad)
- {
+Math.degrees = function(rad){
  return rad*(180/Math.PI);
- };
+};
  
-Math.radians = function(deg)
- {
+Math.radians = function(deg){
  return deg * (Math.PI/180);
- };
- function setData(){
+};
+ 
+function AxisAngleRotation(){
+ 	var rotationAxis=new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize();
+ 	rotation={
+ 		angle:0,
+ 		precAngle:0,
+ 		mesh:0
+ 	};
+ 	var rotateAngle=function(params){
+ 		rot=params.target.angle-rotation.precAngle;
+ 		meshes.children[rotation.mesh].rotateOnAxis(rotationAxis,Math.radians(rot));
+ 		rotation.precAngle=params.target.angle;
+ 	};
+ 	var calculateAxis=function(){
+ 		axis.geometry.vertices[0]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(300));
+ 		axis.geometry.vertices[1]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(-300));
+ 		axis.geometry.verticesNeedUpdate=true;
+ 	};
+	var tl = new TimelineLite();
+	for(var i in meshes.children){
+		meshes.children[i].userData.last="AxisAngle";
+		meshes.children[i].userData.axis=[userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z];
+		tl.to(axis.material,userOpts.fadeDuration,{opacity:1,onStart:calculateAxis});
+		tl.add(TweenLite.to(rotation,userOpts.duration,{angle:userOpts.AxisAngle.angle,onUpdate:rotateAngle,onUpdateParams:["{self}"]}));
+		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
+		tl.to(rotation,0.00001,{angle:0,precAngle:0,mesh:parseInt(i)+1});
+	}
+	tl.play();
+ }
+function rotateWithMatrix(){
+ 	for(var i in meshes.children){
+		meshes.children[i].userData.last="Matrix";
+		meshes.children[i].userData.axisOrder=userOpts.rotationMatrix.axes[0]+userOpts.rotationMatrix.axes[1]+userOpts.rotationMatrix.axes[2];
+		meshes.children[i].userData.angles=[userOpts.rotationMatrix.parameters[0],userOpts.rotationMatrix.parameters[1],userOpts.rotationMatrix.parameters[2]];
+		for(var j=0;j<3;j++){
+			if(userOpts.rotationMatrix.axes[j]==="x"){
+				meshes.children[i].applyMatrix(new THREE.Matrix4().makeRotationX(Math.radians(userOpts.rotationMatrix.parameters[j])));
+			}
+			else if(userOpts.rotationMatrix.axes[j]==="y"){
+				meshes.children[i].applyMatrix(new THREE.Matrix4().makeRotationY(Math.radians(userOpts.rotationMatrix.parameters[j])));
+			}
+			else if(userOpts.rotationMatrix.axes[j]==="z"){
+				meshes.children[i].applyMatrix(new THREE.Matrix4().makeRotationZ(Math.radians(userOpts.rotationMatrix.parameters[j])));
+			}
+		}
+	}
+
+}
+function rotateWithQuaternion(){
+ 	var rotationAxis=new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize();
+ 	rotation={
+ 		t:0,
+ 		mesh:0,
+ 		x:0,
+ 		y:0,
+ 		z:0,
+ 		w:1
+ 	};
+ 	var rotateAngle=function(){
+ 		meshes.children[rotation.mesh].quaternion=meshes.children[i].userData.startQuaternion.clone().slerp(meshes.children[rotation.mesh].userData.endQuaternion,rotation.t);
+ 	};
+	var tl = new TimelineLite();
+	var i;
+	rotationQuaternion=new THREE.Quaternion().setFromAxisAngle(rotationAxis,Math.radians(userOpts.AxisAngle.angle));
+	quaternionStack.push(rotationQuaternion.clone());
+	for(i in meshes.children){
+		meshes.children[i].userData.last="Quaternion";
+		meshes.children[i].userData.axis=[userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z];
+		meshes.children[i].userData.angle=userOpts.AxisAngle.angle;
+		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion.clone();
+		meshes.children[i].userData.rotationQuaternion=rotationQuaternion;
+		meshes.children[i].userData.endQuaternion=meshes.children[i].quaternion.clone().multiply(meshes.children[i].userData.rotationQuaternion);
+		tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
+		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle}));
+		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:parseInt(i)+1});
+	}
+	tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:0});
+	tl.play();
+}
+function rotateWithProductQuaternion(){
+ 	rotation={
+ 		t:0,
+ 		mesh:0,
+ 		x:0,
+ 		y:0,
+ 		z:0,
+ 		w:1
+ 	};
+ 	var rotateAngle=function(){
+ 		meshes.children[rotation.mesh].quaternion=meshes.children[i].userData.startQuaternion.clone().slerp(meshes.children[rotation.mesh].userData.endQuaternion,rotation.t);
+ 	};
+	var tl = new TimelineLite();
+	var i;
+	rotationQuaternion=lastQuaternion;
+	for(i in meshes.children){
+		meshes.children[i].userData.last="Product Quaternion";
+		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion.clone();
+		meshes.children[i].userData.rotationQuaternion=rotationQuaternion;
+		meshes.children[i].userData.endQuaternion=meshes.children[i].quaternion.clone().multiply(meshes.children[i].userData.rotationQuaternion);
+		//tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
+		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle}));
+		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:parseInt(i)+1});
+	}
+	tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:0});
+	tl.play();
+}
+function reset(){
+ 	for (var i in meshes.children){
+ 		console.log(meshes.children[i].userData.startPosition);
+ 		meshes.children[i].position=meshes.children[i].userData.startPosition;
+ 		meshes.children[i].rotation.x=0;
+ 		meshes.children[i].rotation.y=0;
+ 		meshes.children[i].rotation.z=0;
+ 		meshes.children[i].updateMatrix();
+ 		quaternionStack=[];
+
+ 	}
+}
+
+function setData(){
  	string="";
  	switch(cube.userData.last){
  		case "Quaternion":{
@@ -446,7 +564,6 @@ Math.radians = function(deg)
  			tempMatrix=new THREE.Matrix4();
  			for(var j=0;j<3;j++){
 				if(cube.userData.axisOrder[j]==="x"){
-					console.log("making matrix rotation on axis x by angle");
 					tempMatrix.makeRotationX(Math.radians(cube.userData.angles[j]));
 					resultMatrix.multiplyMatrices(tempMatrix,resultMatrix);
 					matrices.push(tempMatrix.clone());
@@ -476,121 +593,4 @@ Math.radians = function(deg)
  	}
  	console.log(string);
  	document.getElementById("dialogBox").innerHTML=string;
- }
- 
- function AxisAngleRotation(){
- 	var rotationAxis=new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize();
- 	rotation={
- 		angle:0,
- 		precAngle:0,
- 		mesh:0
- 	};
- 	var rotateAngle=function(params){
- 		rot=params.target.angle-rotation.precAngle;
- 		meshes.children[rotation.mesh].rotateOnAxis(rotationAxis,Math.radians(rot));
- 		rotation.precAngle=params.target.angle;
- 	};
- 	var calculateAxis=function(){
- 		axis.geometry.vertices[0]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(300));
- 		axis.geometry.vertices[1]=meshes.children[rotation.mesh].localToWorld(rotationAxis.clone().multiplyScalar(-300));
- 		axis.geometry.verticesNeedUpdate=true;
- 	};
-	var tl = new TimelineLite();
-	for(var i in meshes.children){
-		meshes.children[i].userData.last="AxisAngle";
-		meshes.children[i].userData.axis=[userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z];
-		tl.to(axis.material,userOpts.fadeDuration,{opacity:1,onStart:calculateAxis});
-		tl.add(TweenLite.to(rotation,userOpts.duration,{angle:userOpts.AxisAngle.angle,onUpdate:rotateAngle,onUpdateParams:["{self}"]}));
-		tl.to(axis.material,userOpts.fadeDuration,{opacity:0});
-		tl.to(rotation,0.00001,{angle:0,precAngle:0,mesh:parseInt(i)+1});
-	}
-	tl.play();
- }
- function rotateWithMatrix(){
- 	for(var i in meshes.children){
-		meshes.children[i].userData.last="Matrix";
-		meshes.children[i].userData.axisOrder=userOpts.rotationMatrix.axes[0]+userOpts.rotationMatrix.axes[1]+userOpts.rotationMatrix.axes[2];
-		meshes.children[i].userData.angles=[userOpts.rotationMatrix.parameters[0],userOpts.rotationMatrix.parameters[1],userOpts.rotationMatrix.parameters[2]];
-		for(var j=0;j<3;j++){
-			if(userOpts.rotationMatrix.axes[j]==="x"){
-				meshes.children[i].applyMatrix(new THREE.Matrix4().makeRotationX(Math.radians(userOpts.rotationMatrix.parameters[j])));
-			}
-			else if(userOpts.rotationMatrix.axes[j]==="y"){
-				meshes.children[i].applyMatrix(new THREE.Matrix4().makeRotationY(Math.radians(userOpts.rotationMatrix.parameters[j])));
-			}
-			else if(userOpts.rotationMatrix.axes[j]==="z"){
-				meshes.children[i].applyMatrix(new THREE.Matrix4().makeRotationZ(Math.radians(userOpts.rotationMatrix.parameters[j])));
-			}
-		}
-	}
-
- }
- function rotateWithQuaternion(){
- 	var rotationAxis=new THREE.Vector3(userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z).normalize();
- 	rotation={
- 		t:0,
- 		mesh:0,
- 		x:0,
- 		y:0,
- 		z:0,
- 		w:1
- 	};
- 	var rotateAngle=function(){
- 		meshes.children[rotation.mesh].quaternion=meshes.children[i].userData.startQuaternion.clone().slerp(meshes.children[rotation.mesh].userData.endQuaternion,rotation.t);
- 	};
-	var tl = new TimelineLite();
-	var i;
-	rotationQuaternion=new THREE.Quaternion().setFromAxisAngle(rotationAxis,Math.radians(userOpts.AxisAngle.angle));
-	quaternionStack.push(rotationQuaternion.clone());
-	for(i in meshes.children){
-		meshes.children[i].userData.last="Quaternion";
-		meshes.children[i].userData.axis=[userOpts.AxisAngle.x,userOpts.AxisAngle.y,userOpts.AxisAngle.z];
-		meshes.children[i].userData.angle=userOpts.AxisAngle.angle;
-		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion.clone();
-		meshes.children[i].userData.rotationQuaternion=rotationQuaternion;
-		meshes.children[i].userData.endQuaternion=meshes.children[i].quaternion.clone().multiply(meshes.children[i].userData.rotationQuaternion);
-		tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
-		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle}));
-		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:parseInt(i)+1});
-	}
-	tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:0});
-	tl.play();
- }
- function rotateWithProductQuaternion(){
- 	rotation={
- 		t:0,
- 		mesh:0,
- 		x:0,
- 		y:0,
- 		z:0,
- 		w:1
- 	};
- 	var rotateAngle=function(){
- 		meshes.children[rotation.mesh].quaternion=meshes.children[i].userData.startQuaternion.clone().slerp(meshes.children[rotation.mesh].userData.endQuaternion,rotation.t);
- 	};
-	var tl = new TimelineLite();
-	var i;
-	rotationQuaternion=lastQuaternion;
-	for(i in meshes.children){
-		meshes.children[i].userData.last="Product Quaternion";
-		meshes.children[i].userData.startQuaternion=meshes.children[i].quaternion.clone();
-		meshes.children[i].userData.rotationQuaternion=rotationQuaternion;
-		meshes.children[i].userData.endQuaternion=meshes.children[i].quaternion.clone().multiply(meshes.children[i].userData.rotationQuaternion);
-		//tl.to(rotation,0.01,{x:meshes.children[rotation.mesh].quaternion.x,y:meshes.children[rotation.mesh].quaternion.y,z:meshes.children[rotation.mesh].quaternion.z,w:meshes.children[rotation.mesh].quaternion.w});
-		tl.add(TweenLite.to(rotation,userOpts.duration,{t:1,onUpdate:rotateAngle}));
-		tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:parseInt(i)+1});
-	}
-	tl.to(rotation,0.01,{t:0,x:0,y:0,z:0,w:1,mesh:0});
-	tl.play();
- }
- function reset(){
- 	for (var i in meshes.children){
- 		console.log(meshes.children[i].userData.startPosition);
- 		meshes.children[i].position=meshes.children[i].userData.startPosition;
- 		meshes.children[i].rotation.x=0;
- 		meshes.children[i].rotation.y=0;
- 		meshes.children[i].rotation.z=0;
- 		meshes.children[i].updateMatrix();
-
- 	}
- }
+}
