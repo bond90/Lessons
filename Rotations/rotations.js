@@ -38,26 +38,7 @@ function init(){
 	document.body.appendChild(renderer.domElement);
 	scene = new THREE.Scene();
 	meshes=new THREE.Object3D();
-	var geometry = new THREE.PlaneGeometry(25, 25, 1, 1);
-	var geometry2 = geometry.clone();
-	geometry2.applyMatrix( new THREE.Matrix4().makeRotationY( Math.PI ) );
-	THREE.GeometryUtils.merge( geometry, geometry2, 1 );
-	geometry.mergeVertices();
-	var materials = [
-	       new THREE.MeshBasicMaterial({
-	           map: THREE.ImageUtils.loadTexture('/Content/Images/1.png'),side:THREE.FrontSide,transparent:true
-	       }),
-	       new THREE.MeshBasicMaterial({
-	           map: THREE.ImageUtils.loadTexture('/Content/Images/3.png'),side:THREE.FrontSide,transparent:true
-	       })
-	    ];
-	/*plane = new THREE.Mesh(geometry,new THREE.MeshFaceMaterial( materials ));
-	plane.overdraw = true;
-	plane.name="plane";
-	plane.position.x=100;
-	plane.userData.startPosition=plane.position.clone();
-	plane.add (new THREE.AxisHelper(30));
-	meshes.add(plane);*/
+	
 	var lineGeometry = new THREE.Geometry();
     lineGeometry.vertices.push(new THREE.Vector3(-10, 0, 0));
     lineGeometry.vertices.push(new THREE.Vector3(0, 10, 0));
@@ -67,85 +48,6 @@ function init(){
         opacity:0
     });
 
-	/*A custom tetrahedron geometry
-	var tetraHedronGeometry = new THREE.Geometry();
-	array=[];
-	array.push(new THREE.Vector3( 1,  0, 0 ));
-	array.push(new THREE.Vector3( -1, 0, 0 ));
-	array.push(new THREE.Vector3( 0, 0, Math.sqrt(3) ));
-	array.push(new THREE.Vector3( 0, 2*Math.sqrt(2.0/3.0), Math.sqrt(3)/3.0 ));
-	for(var i in array){
-		array[i].y-=2.0/3.0*Math.sqrt(2.0/3.0);
-		array[i].z-=Math.sqrt(3)/3.0;
-		array[i].normalize();
-	}
-	tetraHedronGeometry.vertices.push( new THREE.Vector3( 1, 0, 0 ) );
-	tetraHedronGeometry.vertices.push( new THREE.Vector3( -1, 0, 0 ) );
-	tetraHedronGeometry.vertices.push( new THREE.Vector3(  0, 0, Math.sqrt(3) ) );
-	tetraHedronGeometry.vertices.push( new THREE.Vector3(  0, 2*Math.sqrt(2.0/3.0), Math.sqrt(3)/3.0 ) );
-	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 1, 2 ) );
-	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 1 ) );
-	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 3 ) );
-	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 3, 2 ) );*/
-	/*arrayFaces=[];
-	arrayFaces.push(new THREE.Face3( 0, 2, 1));
-	arrayFaces.push(new THREE.Face3( 0, 1, 3));
-	arrayFaces.push(new THREE.Face3( 0, 3, 2));
-	arrayFaces.push(new THREE.Face3( 1, 2, 3));
-	oldArrayFaces=[];
-	faceIndexesToRemove=[];
-	for (k=1;k<1;k++) {
-		for(i in arrayFaces){
-			oldArrayFaces.push(arrayFaces[i]);	
-		}
-		arrayFaces=[];
-        var barycenter = new THREE.Vector3();
-        for (var j in oldArrayFaces) {
-        	v0=oldArrayFaces[j].a;
-           	v1=oldArrayFaces[j].b;
-           	v2=oldArrayFaces[j].c;
-        	barycenter.x=array[v0].x+array[v1].x+array[v2].x;
-        	barycenter.y=array[v0].y+array[v1].y+array[v2].y;
-        	barycenter.z=array[v0].z+array[v1].z+array[v2].z;
-        	barycenter.multiplyScalar(1.0/3.0);
-        	barycenter.normalize();
-        	array.push(barycenter.clone());
-        	arrayFaces.push(new THREE.Face3(v0,v1,array.length-1));
-        	arrayFaces.push(new THREE.Face3(v1,v2,array.length-1));
-        	arrayFaces.push(new THREE.Face3(v2,v0,array.length-1));
-        }
-	}
-
-
-	for(i in array){
-		tetraHedronGeometry.vertices.push(array[i]);
-	}
-	for(i in arrayFaces){
-		tetraHedronGeometry.faces.push(arrayFaces[i]);
-	}
-
-	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 2, 1 ) );
-	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 1, 3 ) );
-	tetraHedronGeometry.faces.push( new THREE.Face3( 0, 3, 2 ) );
-	tetraHedronGeometry.faces.push( new THREE.Face3( 1, 2, 3 ) );
-	tetraHedronGeometry.centroid = new THREE.Vector3();
-	for (i = 0, l = tetraHedronGeometry.vertices.length; i < l; i++) {
-	    tetraHedronGeometry.centroid.add(tetraHedronGeometry.vertices[i]);
-	}
-	tetraHedronGeometry.centroid.divideScalar(tetraHedronGeometry.vertices.length);
-	tetraHedronGeometry.computeBoundingBox();
-	tetraHedronGeometry.computeBoundingSphere();
-	tetraHedronGeometry.computeFaceNormals();
-	tetraHedronGeometry.computeVertexNormals();
-	THREE.GeometryUtils.center(tetraHedronGeometry);
-	tetraHedronMaterial=new THREE.MeshNormalMaterial({wireframe:true});
-	tetraHedron=new THREE.Mesh(tetraHedronGeometry,tetraHedronMaterial);
-	tetraHedron.scale.x=50;
-	tetraHedron.scale.y=50;
-	tetraHedron.scale.z=50;
-	tetraHedron.position.x=-50;
-	tetraHedron.userData.startPosition=tetraHedron.position.clone();
-	//faceNormals=new THREE.FaceNormalsHelper(tetraHedron,70);*/
 	var torusGeometry = new THREE.TorusGeometry( 100, 40, 16, 100 );
 	var torusMaterial = new THREE.MeshNormalMaterial( {wireframe:true} );
 	var torus = new THREE.Mesh( torusGeometry, torusMaterial );

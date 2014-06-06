@@ -16,12 +16,20 @@ function init(){
 	transformationStack=[];
 	var width = window.innerWidth;
 	var height = window.innerHeight;
+
+	/*Renderer creation*/
 	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setSize(width, height);
-	renderer.setClearColor( 0xFFFFFF, 1);
+	renderer.setClearColor( 0xFFFFFF, 1); /*White Background*/
 	document.body.appendChild(renderer.domElement);
 	scene = new THREE.Scene();
-	meshes=new THREE.Object3D();
+	meshes=new THREE.Object3D(); /*An empty container to group meshes together*/
+
+	/*Line that will be used during animation.
+	Vertices are dummy ones, they will be changed later.
+	Opacity property of the material is set to 0 (transparent property too must be set
+	in order to make it work).
+	It will be tweened during animations, to implement fade-in and fade-out effects*/
 	var lineGeometry = new THREE.Geometry();
     lineGeometry.vertices.push(new THREE.Vector3(-10, 0, 0));
     lineGeometry.vertices.push(new THREE.Vector3(0, 10, 0));
@@ -33,7 +41,7 @@ function init(){
     line = new THREE.Line(lineGeometry, lineMaterial);
     scene.add(line);
 
-
+    /*Vector orthogonal to the hyperplane*/
     var vectorGeometry = new THREE.Geometry();
     vectorGeometry.vertices.push(new THREE.Vector3(0, 0, 0));
     vectorGeometry.vertices.push(new THREE.Vector3(0, 10, 0));
@@ -46,7 +54,11 @@ function init(){
  	scene.add(reflectionVectorMesh);
 
 
-
+ 	/*Creation of a plane geometry.
+ 	The mesh is composed of two geometries, one of which flipped, merged together.
+ 	This because we wanted to apply different textures for each of the two sides.
+ 	Materials is an array composed of two materials.
+ 	*/
 	var geometry = new THREE.PlaneGeometry(25, 25, 1, 1);
 	var geometry2 = geometry.clone();
 	geometry2.applyMatrix( new THREE.Matrix4().makeRotationY( Math.PI ) );
@@ -60,6 +72,8 @@ function init(){
 	           map: THREE.ImageUtils.loadTexture('/Content/Images/3.png'),side:THREE.FrontSide,transparent:true
 	       })
 	    ];
+	/*Plane creation.
+	MeshFaceMaterial is just a container for the former array of materials. It has no own property.*/
 	plane = new THREE.Mesh(geometry,new THREE.MeshFaceMaterial( materials ));
 	plane.overdraw = true;
 	plane.name="plane";
@@ -67,6 +81,12 @@ function init(){
 	plane.add (new THREE.AxisHelper(30));
 	meshes.add(plane);
 
+	/*Creation of a cube geometry (note: it has been renamed to boxGeometry in last version of THREE.js).
+	It takes three parameters, the three dimensions of the polyhedron.
+	Material for each face is MeshLambertMaterial.
+	Doubleside property tells the renderer to draw both front and back face;
+	this is not the normal behaviour, because it requires additional computation.
+	*/
 	var cubeGeometry = new THREE.CubeGeometry(100, 100, 100);
     var cubeMaterials = [
        new THREE.MeshLambertMaterial({
@@ -102,16 +122,9 @@ function init(){
     ];
 	cube = new THREE.Mesh(cubeGeometry, new THREE.MeshFaceMaterial( cubeMaterials ) );
 	cube.name="Cube";
-	//cube.rotation.y = Math.PI * 45 / 180;
 	cube.position.x=-100;
 	cube.position.z=50;
 	meshes.add(cube);
-
-	var sphere = new THREE.Mesh(new THREE.SphereGeometry(50, 100, 100), new THREE.MeshNormalMaterial());
-    sphere.overdraw = true;
-    sphere.position.x=-200;
-    sphere.position.y=-100;
-    //meshes.add(sphere);
 
 	scene.add(meshes);
 
@@ -119,7 +132,7 @@ function init(){
 	reflectionPoints=new THREE.Object3D();
 	reflectionMeshes.add(reflectionPoints);
 
-	//Setup the reflection plane
+	/*Setup the reflection plane.*/
 	reflectGeometry=new THREE.PlaneGeometry( 400, 400 );
 	reflectPlane = new THREE.Mesh(reflectGeometry, new THREE.MeshNormalMaterial());
 	reflectPlane.overdraw = true;
@@ -134,8 +147,15 @@ function init(){
 	axisHelper.material.linewidth=4;
 	scene.add( axisHelper );
 
-	var light = new THREE.AmbientLight( 0x909090 ); // soft white light
+	/*Creation of an ambient light. A soft uniform light.
+	In order to visualize anything, a light must be added to the scene.*/
+
+	var light = new THREE.AmbientLight( 0x909090 );
 	scene.add( light );
+
+	/*Camera creation.
+	You can choose between Perspective or Orthogonal camera.*/
+
 	camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 10000);
 	camera.position.y = 200;
 	camera.position.z = 500;
@@ -150,11 +170,13 @@ function init(){
 			setupTween();
 		});
 
+	/*A simple frame counter, used for debugging purposes.
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
 	stats.domElement.style.top = '0px';
-	document.body.appendChild( stats.domElement );
+	document.body.appendChild( stats.domElement );*/
 
+	/*Grids creation*/
 	gridXZ = new THREE.GridHelper(200, 5);
 	gridXZ.setColors( new THREE.Color(0x006600), new THREE.Color(0x006600) );
 	gridXZ.position.set( 0,-200,0 );
@@ -281,7 +303,7 @@ function render() {
 }
 
 
-
+/*A simple function that resizes the screen in order to maintain proportions*/
 function onWindowResize() {
 				camera.aspect = window.innerWidth / window.innerHeight;
 				camera.updateProjectionMatrix();
