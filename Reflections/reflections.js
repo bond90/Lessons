@@ -123,7 +123,7 @@ function init(){
 	cube = new THREE.Mesh(cubeGeometry, new THREE.MeshFaceMaterial( cubeMaterials ) );
 	cube.name="Cube";
 	cube.position.x=-100;
-	cube.position.z=50;
+	cube.position.z=100;
 	meshes.add(cube);
 
 	scene.add(meshes);
@@ -170,11 +170,11 @@ function init(){
 			setupTween();
 		});
 
-	/*A simple frame counter, used for debugging purposes.
+	//A simple frame counter, used for debugging purposes.
 	stats = new Stats();
 	stats.domElement.style.position = 'absolute';
 	stats.domElement.style.top = '0px';
-	document.body.appendChild( stats.domElement );*/
+	document.body.appendChild( stats.domElement );
 
 	/*Grids creation*/
 	gridXZ = new THREE.GridHelper(200, 5);
